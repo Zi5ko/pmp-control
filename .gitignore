@@ -1,12 +1,21 @@
-# Node
-node_modules/
-dist/
-.env
+# global
+.DS_Store
 *.log
 
-# macOS
-.DS_Store
+# node
+node_modules/
+dist/
+coverage/
 
-# Bases de datos locales
-data/
-data/db/
+# env & creds
+.env
+.env.* 
+**/.env
+**/.env.*
+
+# editor
+.vscode/
+.idea/
+
+# vite
+frontend/.vite/
