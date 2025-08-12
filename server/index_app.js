@@ -1,17 +1,21 @@
-require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const passport = require('passport');
+require('./config/passport');
+require('dotenv').config();
 
 const app = express();
 
 //Middlewares base
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: "http://localhost:5173",
   credentials: true
 }));
 app.use(express.json());
+
+// Middleware para manejar cookies
+app.use(cookieParser());
 
 //Passport
 const initPassport = require('./config/passport');
@@ -44,6 +48,7 @@ app.get('/health', (req, res) => {
   });
 
 app.use('/api', require('./routes/healthRoutes'));
+
 
 // Exportar la aplicación para usarla en otros archivos
 module.exports = app;

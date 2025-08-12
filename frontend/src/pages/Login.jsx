@@ -18,9 +18,13 @@ export default function Login() {
     setErr("");
     setLoading(true);
     try {
-      const { data } = await axios.post(`${API_URL}/auth/login`, { email, password: pass });
-      localStorage.setItem("token", data.token);
-      window.location.href = "/dashboard";
+      await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password: pass
+      }, {
+        withCredentials: true  // ⬅️ permite recibir y guardar la cookie
+      });
+      window.location.href = "/";      
     } catch (e) {
       setErr(e?.response?.data?.error || "Credenciales inválidas");
     } finally {
