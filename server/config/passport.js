@@ -2,10 +2,21 @@ const { Strategy } = require('passport-google-oauth20');
 const pool = require('../db');
 
 module.exports = function initPassport(passport) {
+  const {
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    BACKEND_URL
+  } = process.env;
+
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !BACKEND_URL) {
+    console.warn('Google OAuth environment variables missing, skipping strategy');
+    return;
+  }
+
   passport.use(new Strategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.BACKEND_URL}/api/auth/google/callback`
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: `${BACKEND_URL}/api/auth/google/callback`
   }, async (_accessToken, _refreshToken, profile, done) => {
     try {
       const email = profile.emails?.[0]?.value;
@@ -26,3 +37,4 @@ module.exports = function initPassport(passport) {
     }
   }));
 };
+
