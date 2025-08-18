@@ -1,5 +1,5 @@
 const { Strategy } = require('passport-google-oauth20');
-const pool = require('../db');
+const db = require('../db');
 
 module.exports = function initPassport(passport) {
   const {
@@ -16,25 +16,32 @@ module.exports = function initPassport(passport) {
   passport.use(new Strategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: `${BACKEND_URL}/api/auth/google/callback`
-  }, async (_accessToken, _refreshToken, profile, done) => {
+    callbackURL: `${BACKEND_URL}/api/auth/google/callback` 
+  },
+  async (_accessToken, _refreshToken, profile, done) => {
     try {
       const email = profile.emails?.[0]?.value;
       const nombre = profile.displayName;
 
-      // Ajusta a tu esquema real de "usuarios"
-      const result = await pool.query(
-        `INSERT INTO usuarios (email, nombre, rol_id)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (email) DO UPDATE SET nombre = EXCLUDED.nombre
-         RETURNING id, email, rol_id`,
-        [email, nombre, 1]
-      );
+      // Buscar usuario por email
+      const existing = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+      let user = existing.rows[0];
 
-      return done(null, result.rows[0]);
-    } catch (e) {
-      return done(e);
+      // Si no existe, lo crea
+      if (!user) {
+        const result = await db.query(
+          `INSERT INTO usuarios (email, nombre, rol_id)
+           VALUES ($1, $2, $3)
+           RETURNING id, email, rol_id`,
+          [email, nombre, 1]  // Rol por defecto: administrador (puedes ajustarlo)
+        );
+        user = result.rows[0];
+      }
+
+      return done(null, user);
+    } catch (err) {
+      console.error("Error en GoogleStrategy:", err);
+      return done(err, null);
     }
   }));
 };
-

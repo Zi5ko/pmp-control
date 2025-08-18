@@ -51,20 +51,13 @@ async function getOrdenDetallada(id) {
   const result = await pool.query(
     `
     SELECT 
-      o.id,
-      o.fecha_programada,
-      o.fecha_ejecucion,
-      o.estado,
-      o.responsable,
-      o.observaciones,
+      o.*, 
       e.nombre AS equipo_nombre,
       e.ubicacion,
-      p.nombre AS plan_nombre,
-      p.tipo AS tipo_mantenimiento,
-      p.frecuencia
+      u.nombre AS responsable_nombre
     FROM ordenes_trabajo o
     JOIN equipos e ON o.equipo_id = e.id
-    JOIN planes_mantenimiento p ON o.plan_id = p.id
+    LEFT JOIN usuarios u ON o.responsable = u.id::text
     WHERE o.id = $1
     `,
     [id]

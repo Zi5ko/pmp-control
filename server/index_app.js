@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
-require('./config/passport');
 require('dotenv').config();
+const evidenciasRoutes = require('./routes/evidenciasRoutes');
 
 const app = express();
 
@@ -27,7 +27,10 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/usuarios', require('./routes/usuariosRoutes'));
 app.use('/api/ordenes', require('./routes/ordenesRoutes'));
-// agrega aquí las demás rutas que tengas
+app.use('/api/planes', require('./routes/planesRoutes'));
+app.use('/api/equipos', require('./routes/equiposRoutes'));
+app.use('/api/evidencias', evidenciasRoutes);
+
 
 //Manejo de errores básico
 app.use((err, _req, res, _next) => {
@@ -49,6 +52,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api', require('./routes/healthRoutes'));
 
+// Middleware para servir archivos estáticos de la carpeta "uploads"
+app.use('/uploads', express.static('uploads'));
 
 // Exportar la aplicación para usarla en otros archivos
 module.exports = app;

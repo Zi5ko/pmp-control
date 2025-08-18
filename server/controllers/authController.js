@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const db = require('../db');
+const bcrypt = require('bcryptjs');
 
 
 exports.startGoogleAuth = passport.authenticate('google', { scope: ['profile', 'email'] });
@@ -25,25 +26,35 @@ exports.googleCallback = (req, res, next) => {
     });
 
     //Redirige al frontend sin token en URL
-    const target = process.env.FRONTEND_URL || 'http://localhost:5173';
-    return res.redirect(target);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/success?token=${token}`);
   })(req, res, next);
 };
 
-
-// Simple local login placeholder used for tests
+// Manejador para el inicio de sesión local
 exports.localLogin = async (req, res) => {
-  const { email, password } = req.body || {};
+  const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña requeridos' });
   }
 
   try {
-    const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
-    const user = rows[0];
+    const result = await db.query(
+      `SELECT u.*, r.nombre AS rol_nombre
+       FROM usuarios u
+       JOIN roles r ON u.rol_id = r.id
+       WHERE u.email = $1`,
+      [email]
+    );
 
-    if (!user || user.password_hash !== password) {
+    const user = result.rows[0];
+
+    if (!user || !user.password_hash) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
@@ -53,26 +64,26 @@ exports.localLogin = async (req, res) => {
       { expiresIn: '8h' }
     );
 
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: false, // true solo en producción con HTTPS
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 8
+    return res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        rol_id: user.rol_id,
+        rol_nombre: user.rol_nombre,
+        nombre: user.nombre
+      }
     });
 
-    return res.json({ ok: true, msg: 'Login exitoso' });
-
-  } catch (err) {
-    console.error('Error en login local:', err);
-    return res.status(500).json({ error: 'Error en el servidor' });
+  } catch (error) {
+    console.error('Error en login local:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 
 // Endpoint to fetch user info from a JWT token
-exports.me = (req, res) => {
+exports.me = async (req, res) => {
   const token = req.cookies.jwt;
-
-  console.log("Token recibido:", token);
 
   if (!token) {
     return res.status(401).json({ error: 'Token requerido' });
@@ -80,13 +91,28 @@ exports.me = (req, res) => {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'test-secret');
-    return res.json({
-      id: payload.sub,
-      email: payload.email,
-      rol: payload.rol_id
+    const userId = payload.sub;
+
+    // Consulta con JOIN para obtener el nombre del rol
+    const result = await db.query(`
+      SELECT u.id, u.email, u.nombre, u.rol_id, r.nombre AS rol_nombre
+      FROM usuarios u
+      JOIN roles r ON u.rol_id = r.id
+      WHERE u.id = $1
+    `, [userId]);
+
+    const user = result.rows[0];
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    return res.status(200).json({
+      id: user.id,
+      email: user.email,
+      nombre: user.nombre,
+      rol_id: user.rol_id,
+      rol_nombre: user.rol_nombre
     });
-  } catch (_e) {
-    console.error("❌ Error al verificar token:", _e);
+  } catch (e) {
+    console.error("❌ Error al verificar token:", e);
     return res.status(401).json({ error: 'Token inválido' });
   }
 };
