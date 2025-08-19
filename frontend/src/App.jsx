@@ -23,6 +23,7 @@ import Visualizar from "./pages/functions/ListaEquipos";
 import Planificacion from "./pages/functions/Planificacion";
 import AsignarOrdenes from "./pages/functions/AsignarOrden";
 import HistorialTecnico from "./pages/functions/HistorialTécnico";
+import ValidarOrdenes from "./pages/functions/ValidarOrdenes";
 
 function App() {
   const isAuthenticated = () => {
@@ -76,6 +77,7 @@ function App() {
           <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="historial" element={<HistorialTecnico />} />
+          <Route path="validacion" element={<ValidarOrdenes />} />
         </Route>
 
         {/* TECNICO */}
@@ -104,6 +106,7 @@ function App() {
           <Route index element={<InicioSupervisor />} />
           <Route path="calendario" element={<Calendario />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
+          <Route path="validacion" element={<ValidarOrdenes />} />
         </Route>
 
         {/* RESPONSABLE */}
@@ -122,6 +125,7 @@ function App() {
           <Route path="calendario" element={<Calendario />} />
           <Route path="lista-equipos" element={<Visualizar />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
+          <Route path="validacion" element={<ValidarOrdenes />} />
         </Route>
 
         {/* ESMP */}

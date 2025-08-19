@@ -25,3 +25,21 @@ export const getOrdenesRealizadas = async () => {
   const response = await api.get("/ordenes/realizadas");
   return response.data;
 };
+
+// Obtener órdenes pendientes de validación
+export async function getOrdenesEjecutadas() {
+  const response = await api.get("/ordenes/ejecutadas/no-validadas");
+  return response.data;
+}
+
+// Validar una orden ejecutada
+export async function validarOrden(id, payload) {
+  const response = await api.put(`/ordenes/${id}/validar`, payload);
+  return response.data;
+}
+
+// Obtener historial de órdenes
+export const getHistorialOrdenes = async () => {
+  const response = await api.get("/ordenes/historial");
+  return response.data;
+};

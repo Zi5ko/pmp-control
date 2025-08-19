@@ -1,4 +1,5 @@
 const pool = require('../db');
+const { crearLog } = require('./logsAuditoriaModel');
 
 // Obtener todas las órdenes de trabajo
 async function getOrdenes() {
@@ -66,10 +67,90 @@ async function getOrdenDetallada(id) {
   return result.rows[0];
 }
 
+// Obtener órdenes ejecutadas no validadas
+async function obtenerOrdenesEjecutadasNoValidadas() {
+  const query = `
+    SELECT ot.*, 
+           e.nombre AS equipo_nombre, 
+           e.ubicacion, 
+           u.nombre AS tecnico_nombre,
+           (
+             SELECT COUNT(*) 
+             FROM evidencias ev
+             WHERE ev.orden_id = ot.id
+           ) AS total_evidencias
+    FROM ordenes_trabajo ot
+    JOIN equipos e ON ot.equipo_id = e.id
+    LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)
+    WHERE ot.estado = 'realizada'
+    ORDER BY ot.fecha_ejecucion DESCS
+  `;
+
+  const { rows } = await pool.query(query);
+  return rows;
+}
+
+// Validar orden de trabajo
+async function validarOrdenTrabajo(id, validada, comentario, supervisor_id) {
+  const nuevoEstado = validada ? 'validada' : 'pendiente';
+
+  const update = await pool.query(`
+    UPDATE ordenes_trabajo
+    SET estado = $1,
+    observaciones = COALESCE(observaciones, '') || '\n' || $2
+    WHERE id = $3
+    RETURNING *
+  `, [nuevoEstado, comentario || '', id]);
+
+  await crearLog({
+    usuario_id: supervisor_id,
+    accion: validada ? 'validar_orden' : 'rechazar_orden',
+    tabla: 'ordenes_trabajo',
+    registro_id: id
+  });
+
+  return update.rows[0];
+}
+
+// Obtener historial de órdenes de trabajo
+async function obtenerHistorialOrdenes(usuario_id, rol_id) {
+  let query = `
+    SELECT ot.*, 
+           e.nombre AS equipo_nombre, 
+           e.ubicacion, 
+           u.nombre AS tecnico_nombre,
+           COALESCE(json_agg(json_build_object('url', ev.url, 'tipo', ev.tipo, 'subido_por', ev.subido_por)) 
+                    FILTER (WHERE ev.id IS NOT NULL), '[]') AS evidencias
+    FROM ordenes_trabajo ot
+    JOIN equipos e ON ot.equipo_id = e.id
+    LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)
+    LEFT JOIN evidencias ev ON ot.id = ev.orden_id
+    WHERE ot.estado IN ('realizada', 'validada')
+  `;
+
+  const params = [];
+
+  if (rol_id === 3) {
+    query += ` AND ot.responsable = $1`;
+    params.push(usuario_id.toString());
+  }
+
+  query += `
+    GROUP BY ot.id, e.nombre, e.ubicacion, u.nombre
+    ORDER BY ot.fecha_ejecucion DESC
+  `;
+
+  const { rows } = await pool.query(query, params);
+  return rows;
+}
+
 module.exports = {
   getOrdenes,
   getOrdenById,
   crearOrden,
   actualizarEstadoOrden,
-  getOrdenDetallada
+  getOrdenDetallada,
+  obtenerOrdenesEjecutadasNoValidadas,
+  validarOrdenTrabajo,
+  obtenerHistorialOrdenes
 };

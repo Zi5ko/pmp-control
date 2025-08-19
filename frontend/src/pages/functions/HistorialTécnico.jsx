@@ -1,12 +1,22 @@
+//frontend/src/pages/functions/HistorialTécnico.jsx
 import { useEffect, useState } from "react";
-import { getOrdenesRealizadas } from "../../services/ordenesServices";
+import { getHistorialOrdenes } from "../../services/ordenesServices";
+import {
+  FileText,
+  Image,
+  Video,
+  AudioLines,
+  Archive,
+  Table,
+  FileSignature
+} from "lucide-react";
 
 export default function HistorialTecnico() {
   const [ordenes, setOrdenes] = useState([]);
 
   const fetchOrdenes = async () => {
     try {
-      const data = await getOrdenesRealizadas();
+      const data = await getHistorialOrdenes();
       setOrdenes(data);
     } catch (error) {
       console.error("Error al cargar historial:", error);
@@ -16,6 +26,26 @@ export default function HistorialTecnico() {
   useEffect(() => {
     fetchOrdenes();
   }, []);
+  
+  const getFileIcon = (tipo) => {
+    if (!tipo) return <FileText className="w-4 h-4" />;
+  
+    const t = tipo.toLowerCase();
+  
+    if (t.includes("pdf")) return <FileText className="w-4 h-4 text-red-600" />;
+    if (t.includes("word") || t.includes("msword"))
+      return <FileSignature className="w-4 h-4 text-blue-600" />;
+    if (t.includes("excel") || t.includes("spreadsheet"))
+      return <Table className="w-4 h-4 text-green-600" />;
+    if (t.includes("image")) return <Image className="w-4 h-4 text-purple-600" />;
+    if (t.includes("video")) return <Video className="w-4 h-4 text-indigo-600" />;
+    if (t.includes("audio")) return <AudioLines className="w-4 h-4 text-yellow-600" />;
+    if (t.includes("zip") || t.includes("rar")) return <Archive className="w-4 h-4 text-gray-600" />;
+  
+    return <FileText className="w-4 h-4" />;
+  };
+
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
   return (
     <div className="p-4">
@@ -36,24 +66,39 @@ export default function HistorialTecnico() {
               <p className="text-sm text-gray-700">
                 <strong>Fecha ejecución:</strong> {orden.fecha_ejecucion?.slice(0, 10) || "No registrada"}
               </p>
+              <p className={`text-sm font-semibold mt-2 ${
+                orden.estado === 'validada' 
+                  ? 'text-green-600' 
+                  : orden.estado === 'realizada' 
+                  ? 'text-yellow-600' 
+                  : 'text-gray-600'
+                }`}>
+                Estado: {orden.estado}
+              </p>
 
-              {/* Aquí puedes agregar las evidencias si se cargan dentro del objeto orden */}
+              {/* Agregar las evidencias si se cargan dentro del objeto orden */}
               {orden.evidencias?.length > 0 ? (
                 <div className="mt-2">
                   <p className="font-semibold text-sm mb-1">Evidencias:</p>
-                  <ul className="list-disc list-inside text-sm text-gray-700">
-                    {orden.evidencias.map((ev, idx) => (
-                      <li key={idx}>
-                        <a
-                          href={ev.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {ev.tipo} - {ev.url.split("/").pop()}
-                        </a>
-                      </li>
-                    ))}
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    {orden.evidencias.map((ev, idx) => {
+                      // Asegurarse que la URL comience con una /
+                      const url = ev.url.startsWith("/")
+              ? ev.url : `/${ev.url}`;
+
+                      return (
+                        <li key={idx} className="flex items-center gap-2">
+                          <a
+                            href={`${baseUrl}/uploads/${ev.url.replace(/^\/|^uploads\//, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            {getFileIcon(ev.tipo)} Evidencia {idx + 1}
+                          </a>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ) : (

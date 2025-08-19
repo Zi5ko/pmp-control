@@ -4,8 +4,8 @@ const cookieParser = require('cookie-parser');
 const passport = require('passport');
 require('dotenv').config();
 const evidenciasRoutes = require('./routes/evidenciasRoutes');
-
 const app = express();
+const path = require('path');
 
 //Middlewares base
 app.use(cors({
@@ -53,7 +53,8 @@ app.get('/health', (req, res) => {
 app.use('/api', require('./routes/healthRoutes'));
 
 // Middleware para servir archivos estáticos de la carpeta "uploads"
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Exportar la aplicación para usarla en otros archivos
 module.exports = app;

@@ -30,7 +30,8 @@ const menuPorRol = {
       children: [
         { path: "/admin/reportes", label: "Ejecutar Mantenimiento", icon: ClipboardList },
         { path: "/admin/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
-        { path: "/admin/historial", label: "Historial Técnico", icon: ClockIcon }
+        { path: "/admin/historial", label: "Historial Técnico", icon: ClockIcon },
+        { path: "/admin/validacion", label: "Validar Mantenimientos", icon: ClipboardList }
       ]
     },
     {
@@ -65,7 +66,8 @@ const menuPorRol = {
       label: "Mantenimiento",
       icon: Wrench,
       children: [
-        { path: "/supervisor/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck }
+        { path: "/supervisor/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
+        { path: "/supervisor/validacion", label: "Validar Mantenimientos", icon: ClipboardList }
       ]
     },
     { path: "/supervisor/perfil", label: "Perfil de usuario", icon: User }
@@ -77,7 +79,6 @@ const menuPorRol = {
       label: "Mantenimiento",
       icon: Wrench,
       children: [
-        { path: "/esmp/reportes", label: "Ejecutar Mantenimiento", icon: ClipboardList },
         { path: "/esmp/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck }
       ]
     },
@@ -106,7 +107,8 @@ const menuPorRol = {
       icon: Wrench,
       children: [
         { path: "/responsable/reportes", label: "Ejecutar Mantenimiento", icon: ClipboardList },
-        { path: "/responsable/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck }
+        { path: "/responsable/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
+        { path: "/responsable/validacion", label: "Validar Mantenimientos", icon: ClipboardList }
       ]
     },
     { path: "/responsable/perfil", label: "Perfil de usuario", icon: User }

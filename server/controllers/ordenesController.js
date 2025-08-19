@@ -4,7 +4,10 @@ const {
   getOrdenById,
   crearOrden,
   actualizarEstadoOrden,
-  getOrdenDetallada
+  getOrdenDetallada,
+  obtenerOrdenesEjecutadasNoValidadas,
+  validarOrdenTrabajo,
+  obtenerHistorialOrdenes
 } = require('../models/ordenesModel');
 
 const { crearLog } = require('../models/logsAuditoriaModel');
@@ -371,23 +374,41 @@ async function asignarResponsableOrden(req, res) {
   }
 }
 
-async function obtenerOrdenesEjecutadasPorTecnico(req, res) {
+// 13. Obtener órdenes ejecutadas por técnico
+async function obtenerHistorial(req, res) {
   try {
     const user = req.user;
-
-    const { rows } = await db.query(`
-      SELECT o.*, e.nombre AS equipo_nombre, e.ubicacion
-      FROM ordenes_trabajo o
-      JOIN equipos e ON o.equipo_id = e.id
-      WHERE o.estado = 'realizada'
-        AND o.responsable = $1
-      ORDER BY o.fecha_ejecucion DESC
-    `, [user.sub]);
-
-    res.json(rows);
+    const historial = await obtenerHistorialOrdenes(user);
+    res.json(historial);
   } catch (error) {
-    console.error("❌ Error al obtener órdenes realizadas:", error);
-    res.status(500).json({ error: "Error al obtener órdenes realizadas" });
+    console.error("❌ Error al obtener historial:", error);
+    res.status(500).json({ error: "Error al obtener historial" });
+  }
+}
+
+// 14. Listar órdenes para validación
+async function listarOrdenesParaValidacion(req, res) {
+  try {
+    const ordenes = await obtenerOrdenesEjecutadasNoValidadas();
+    res.json(ordenes);
+  } catch (error) {
+    console.error("Error al obtener órdenes ejecutadas:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// 15. Validar orden
+async function validarOrden(req, res) {
+  const { id } = req.params;
+  const { validada, comentario } = req.body;
+  const supervisor_id = req.user.id;
+
+  try {
+    const orden = await validarOrdenTrabajo(id, validada, comentario, supervisor_id);
+    res.json({ mensaje: "Orden validada correctamente", orden }); // 👈 asegúrate de que sea 'orden'
+  } catch (error) {
+    console.error("Error al validar orden:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 }
 
@@ -405,5 +426,7 @@ module.exports = {
   obtenerOrdenesPendientesAsignadas,
   obtenerOrdenesSinResponsable,
   asignarResponsableOrden,
-  obtenerOrdenesEjecutadasPorTecnico
+  obtenerHistorial,
+  listarOrdenesParaValidacion,
+  validarOrden
 };

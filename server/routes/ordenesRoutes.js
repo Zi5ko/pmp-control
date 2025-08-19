@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { verifyToken } = require('../middlewares/auth');
+const validarEstadoOrden = require('../middlewares/orders');
 
 const {
   listarOrdenes,
@@ -17,7 +18,9 @@ const {
   obtenerOrdenesPendientesAsignadas,
   asignarResponsableOrden,
   obtenerOrdenesSinResponsable,
-  obtenerOrdenesEjecutadasPorTecnico
+  obtenerHistorial,
+  listarOrdenesParaValidacion,
+  validarOrden
 } = require('../controllers/ordenesController');
 
 // Rutas principales
@@ -26,6 +29,7 @@ router.get('/ordenes/:id', obtenerOrden);
 router.post('/', crearNuevaOrden);
 router.put('/:id/estado', cambiarEstado);
 router.get('/:id/detalle', detalleOrden);
+router.put('/:id', validarEstadoOrden, validarOrden);
 
 // Rutas adicionales
 router.get("/resumen", async (req, res) => {
@@ -44,6 +48,9 @@ router.get("/resumen", async (req, res) => {
   }
 });
 
+// Rutas para validación y ejecución de órdenes
+router.get("/ejecutadas/no-validadas", verifyToken, listarOrdenesParaValidacion);
+router.put("/:id/validar", verifyToken, validarOrden);
 router.post('/calendarizar', calendarizarMantenimientos);
 router.put('/:id/ejecutar', ejecutarOrden);
 router.get('/proyeccion', proyeccionMantenimientos);
@@ -51,6 +58,6 @@ router.get('/faltantes', equiposSinOrden);
 router.get('/pendientes-asignadas', verifyToken, obtenerOrdenesPendientesAsignadas);
 router.get('/pendientes-sin-responsable', verifyToken, obtenerOrdenesSinResponsable);
 router.put('/:id/asignar', verifyToken, asignarResponsableOrden);
-router.get("/realizadas", verifyToken, obtenerOrdenesEjecutadasPorTecnico);
+router.get('/historial', verifyToken, obtenerHistorial);
 
 module.exports = router;
