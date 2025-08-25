@@ -412,6 +412,38 @@ async function validarOrden(req, res) {
   }
 }
 
+// 16. Obtener reporte firmado
+async function obtenerReporteFirmado(req, res) {
+  try {
+    const { id } = req.params;
+    const evidencia = await getEvidenciaReporte(id);
+    if (!evidencia) {
+      return res.status(404).json({ error: 'No hay reporte firmado para esta orden.' });
+    }
+    res.json(evidencia);
+  } catch (error) {
+    console.error('Error al obtener reporte firmado:', error);
+    res.status(500).json({ error: 'Error al obtener el reporte.' });
+  }
+}
+
+// 17. Obtener órdenes validadas
+async function obtenerOrdenesValidadas(req, res) {
+  try {
+    const result = await db.query(
+      `SELECT ot.*, eq.nombre AS equipo_nombre, eq.ubicacion
+       FROM ordenes_trabajo ot
+       JOIN equipos eq ON ot.equipo_id = eq.id
+       WHERE ot.estado = 'validada'
+       ORDER BY ot.fecha_ejecucion DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener órdenes validadas:", error);
+    res.status(500).json({ error: "Error al obtener órdenes validadas" });
+  }
+}
+
 // Exports
 module.exports = {
   listarOrdenes,
@@ -428,5 +460,7 @@ module.exports = {
   asignarResponsableOrden,
   obtenerHistorial,
   listarOrdenesParaValidacion,
-  validarOrden
+  validarOrden,
+  obtenerReporteFirmado,
+  obtenerOrdenesValidadas
 };

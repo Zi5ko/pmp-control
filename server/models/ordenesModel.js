@@ -1,5 +1,6 @@
 const pool = require('../db');
 const { crearLog } = require('./logsAuditoriaModel');
+const path = require('path');
 
 // Obtener todas las órdenes de trabajo
 async function getOrdenes() {
@@ -144,6 +145,39 @@ async function obtenerHistorialOrdenes(usuario_id, rol_id) {
   return rows;
 }
 
+// Generar reporte PDF de una orden de trabajo
+async function generarReporteOrden(id) {
+  const orden = await getOrdenDetallada(id);
+  if (!orden) throw new Error('Orden no encontrada');
+
+  // Rutas de las firmas
+  const firmaTecnicoPath = path.join(__dirname, '../uploads/firmas', `${orden.responsable}_firma.png`);
+  const firmaServicioPath = path.join(__dirname, '../uploads/firmas_servicio', `${id}_firma.png`);
+  
+  const nombreArchivo = `reporte_${id}_${Date.now()}.pdf`;
+  const ruta = await generarReportePDF(orden, firmaTecnicoPath, firmaServicioPath, nombreArchivo);
+
+  // Registrar como evidencia
+  await pool.query(`
+    INSERT INTO evidencias (orden_id, url, tipo, subido_por)
+    VALUES ($1, $2, $3, $4)
+  `, [id, ruta, 'reporte_firmado', orden.responsable]);
+
+  return ruta;
+}
+
+// Obtener la evidencia del reporte firmado más reciente para una orden
+async function getEvidenciaReporte(id_orden) {
+  const result = await pool.query(`
+    SELECT * FROM evidencias
+    WHERE orden_id = $1 AND tipo = 'reporte_firmado'
+    ORDER BY subido_en DESC
+    LIMIT 1
+  `, [id_orden]);
+
+  return result.rows[0];
+}
+
 module.exports = {
   getOrdenes,
   getOrdenById,
@@ -152,5 +186,7 @@ module.exports = {
   getOrdenDetallada,
   obtenerOrdenesEjecutadasNoValidadas,
   validarOrdenTrabajo,
-  obtenerHistorialOrdenes
+  obtenerHistorialOrdenes,
+  generarReporteOrden,
+  getEvidenciaReporte
 };

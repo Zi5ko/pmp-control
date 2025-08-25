@@ -24,6 +24,7 @@ import Planificacion from "./pages/functions/Planificacion";
 import AsignarOrdenes from "./pages/functions/AsignarOrden";
 import HistorialTecnico from "./pages/functions/HistorialTécnico";
 import ValidarOrdenes from "./pages/functions/ValidarOrdenes";
+import RegistrosFirmas from "./pages/functions/RegistrosFirmas";
 
 function App() {
   const isAuthenticated = () => {
@@ -78,6 +79,7 @@ function App() {
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="historial" element={<HistorialTecnico />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
+          <Route path="registros-firmas" element={<RegistrosFirmas />} />
         </Route>
 
         {/* TECNICO */}
@@ -92,6 +94,7 @@ function App() {
           <Route index element={<InicioTecnico />} />
           <Route path="calendario" element={<Calendario />} />
           <Route path="historial" element={<HistorialTecnico />} />
+          <Route path="registros-firmas" element={<RegistrosFirmas />} />
         </Route>
 
         {/* SUPERVISOR */}

@@ -22,7 +22,6 @@ import logo from "../assets/hosdip logo_Logo Original Blanco.png";
 const menuPorRol = {
   administrador: [
     { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/calendario", label: "Calendario", icon: Calendar },
     { path: "/admin/planificacion", label: "Planificación", icon: ClipboardList },
     {
       label: "Mantenimiento",
@@ -31,7 +30,8 @@ const menuPorRol = {
         { path: "/admin/reportes", label: "Ejecutar Mantenimiento", icon: ClipboardList },
         { path: "/admin/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
         { path: "/admin/historial", label: "Historial Técnico", icon: ClockIcon },
-        { path: "/admin/validacion", label: "Validar Mantenimientos", icon: ClipboardList }
+        { path: "/admin/validacion", label: "Validar Mantenimientos", icon: ClipboardList },
+        { path: "/admin/registros-firmas", label: "Registros y Firmas", icon: FileText }
       ]
     },
     {
@@ -54,6 +54,7 @@ const menuPorRol = {
       icon: Wrench,
       children: [
         { path: "/tecnico/historial", label: "Historial técnico", icon: ClockIcon },
+        { path: "/tecnico/registros-firmas", label: "Registros y Firmas", icon: FileText }
       ]
     },
     { path: "/tecnico/perfil", label: "Perfil de usuario", icon: User }
