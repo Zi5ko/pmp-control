@@ -1,4 +1,6 @@
 //server/controllers/ordenesController.js
+const path = require('path');
+const fs = require('fs');
 const {
   getOrdenes,
   getOrdenById,
@@ -13,6 +15,7 @@ const {
 const { crearLog } = require('../models/logsAuditoriaModel');
 const db = require('../db');
 const { endOfWeek } = require("date-fns");
+const generarReportePDF = require('../utils/generarReportes');
 
 const FRECUENCIA_SEMANAS = {
   mensual: 4,
@@ -444,6 +447,55 @@ async function obtenerOrdenesValidadas(req, res) {
   }
 }
 
+// 18. Generar reporte PDF con firmas
+async function generarPDF(req, res) {
+  try {
+    const { id } = req.params;
+    const { firmaTecnico, firmaServicio } = req.body;
+
+    const orden = await getOrdenDetallada(id);
+    if (!orden) return res.status(404).json({ error: 'Orden no encontrada' });
+
+    if (!firmaTecnico || !firmaServicio) {
+      return res.status(400).json({ error: 'Firmas incompletas' });
+    }
+
+    // Generar rutas para archivos temporales
+    const firmaTecnicoPath = path.join(__dirname, `../uploads/firmas/firma_tecnico_${orden.responsable}.png`);
+    const firmaServicioPath = path.join(__dirname, `../uploads/firmas_servicio/firma_servicio_${id}.png`);
+
+    // Asegurar directorios
+    fs.mkdirSync(path.dirname(firmaTecnicoPath), { recursive: true });
+    fs.mkdirSync(path.dirname(firmaServicioPath), { recursive: true });
+
+    // Guardar archivos temporales
+    fs.writeFileSync(firmaTecnicoPath, Buffer.from(firmaTecnico, 'base64'));
+    fs.writeFileSync(firmaServicioPath, Buffer.from(firmaServicio, 'base64'));
+
+    // Nombre del archivo PDF
+    const nombreArchivo = `reporte_orden_${id}_${Date.now()}.pdf`;
+
+    // Generar PDF
+    const rutaPDF = await generarReportePDF(
+      orden,
+      firmaTecnicoPath,
+      firmaServicioPath,
+      nombreArchivo
+    );
+
+    // ✅ Limpieza de archivos temporales
+    fs.unlinkSync(firmaTecnicoPath);
+    fs.unlinkSync(firmaServicioPath);
+
+    res.json({ success: true, url: rutaPDF });
+
+  } catch (err) {
+    console.error('Error al generar reporte:', err);
+    res.status(500).json({ error: 'Error al generar reporte' });
+  }
+}
+
+
 // Exports
 module.exports = {
   listarOrdenes,
@@ -462,5 +514,6 @@ module.exports = {
   listarOrdenesParaValidacion,
   validarOrden,
   obtenerReporteFirmado,
-  obtenerOrdenesValidadas
+  obtenerOrdenesValidadas,
+  generarPDF
 };

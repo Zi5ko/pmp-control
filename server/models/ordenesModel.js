@@ -52,16 +52,12 @@ async function actualizarEstadoOrden(id, nuevoEstado) {
 async function getOrdenDetallada(id) {
   const result = await pool.query(
     `
-    SELECT 
-      o.*, 
-      e.nombre AS equipo_nombre,
-      e.ubicacion,
-      u.nombre AS responsable_nombre
-    FROM ordenes_trabajo o
-    JOIN equipos e ON o.equipo_id = e.id
-    LEFT JOIN usuarios u ON o.responsable = u.id::text
-    WHERE o.id = $1
-    `,
+    SELECT ot.*, e.nombre AS equipo_nombre, e.ubicacion, u.nombre AS tecnico_nombre
+    FROM ordenes_trabajo ot
+    JOIN equipos e ON ot.equipo_id = e.id
+    LEFT JOIN usuarios u ON CAST(ot.responsable AS INTEGER) = u.id
+    WHERE ot.id = $1
+  `,
     [id]
   );
 
@@ -84,7 +80,7 @@ async function obtenerOrdenesEjecutadasNoValidadas() {
     JOIN equipos e ON ot.equipo_id = e.id
     LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)
     WHERE ot.estado = 'realizada'
-    ORDER BY ot.fecha_ejecucion DESCS
+    ORDER BY ot.fecha_ejecucion DESC
   `;
 
   const { rows } = await pool.query(query);

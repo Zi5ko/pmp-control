@@ -1,3 +1,4 @@
+//server/models/logsAuditoriaModel.js
 const pool = require('../db');
 
 /**
@@ -19,4 +20,16 @@ async function crearLog({ usuario_id, accion, tabla, registro_id }) {
   return result.rows[0];
 }
 
-module.exports = { crearLog };
+async function obtenerLogsAuditoria() {
+  const result = await db.query(`
+    SELECT l.*, u.nombre AS usuario
+    FROM logs_auditoria l
+    LEFT JOIN usuarios u ON l.usuario_id = u.id
+    ORDER BY l.fecha DESC
+  `);
+  return result.rows;
+};
+
+module.exports = { crearLog,
+  obtenerLogsAuditoria
+ };

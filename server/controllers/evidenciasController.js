@@ -1,4 +1,6 @@
+// server/controllers/evidenciasController.js
 const path = require('path');
+const multer = require('multer');
 const { agregarEvidencia, obtenerEvidenciasPorOrden } = require('../models/evidenciasModel');
 const { crearLog } = require('../models/logsAuditoriaModel');
 
@@ -12,6 +14,11 @@ async function subirEvidencia(req, res) {
     const { orden_id } = req.body;
     const archivo = req.file;
     const extension = path.extname(archivo.originalname).toLowerCase(); // tipo de archivo
+
+    if (!req.user || !req.user.sub) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
     const usuario_id = req.user.sub; // desde el JWT
 
     // Registro en base de datos

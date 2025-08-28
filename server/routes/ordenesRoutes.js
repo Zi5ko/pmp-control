@@ -22,8 +22,8 @@ const {
   listarOrdenesParaValidacion,
   validarOrden,
   obtenerReporteFirmado,
-  generarReporteOrden,
-  obtenerOrdenesValidadas
+  obtenerOrdenesValidadas,
+  generarPDF
 } = require('../controllers/ordenesController');
 
 // Rutas principales
@@ -62,16 +62,7 @@ router.get('/pendientes-asignadas', verifyToken, obtenerOrdenesPendientesAsignad
 router.get('/pendientes-sin-responsable', verifyToken, obtenerOrdenesSinResponsable);
 router.put('/:id/asignar', verifyToken, asignarResponsableOrden);
 router.get('/historial', verifyToken, obtenerHistorial);
-router.post('/:id/generar-reporte', verifyToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const rutaPDF = await generarReporteOrden(id);
-    res.json({ success: true, url: rutaPDF });
-  } catch (err) {
-    console.error('Error al generar reporte:', err);
-    res.status(500).json({ error: 'Error al generar reporte' });
-  }
-});
+router.post('/:id/generar-reporte', verifyToken, generarPDF);
 router.get('/:id/reporte', obtenerReporteFirmado);
 router.get("/validadas", obtenerOrdenesValidadas);
 

@@ -55,12 +55,23 @@ app.get('/health', (req, res) => {
 app.use('/api', require('./routes/healthRoutes'));
 
 // Middleware para servir archivos estáticos de la carpeta "uploads"
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const authUploads = require('./middlewares/auth');
+app.use('/uploads', authUploads, express.static(path.join(__dirname, 'uploads')));
 
 // Rutas para manejar firmas
 const firmasRoutes = require('./routes/firmasRoutes');
 app.use('/api/firmas', firmasRoutes);
 
+// Rutas para manejar alertas
+app.use('/api/alertas', require('./routes/alertasRoutes'));
+
+// Rutas para manejar logs de auditoría
+const logsRoutes = require('./routes/logsRoutes');
+app.use('/api/logs', logsRoutes);
+
+// Rutas para manejar reportes
+const reportesRoutes = require("./routes/reportesRoutes");
+app.use("/api/reportes", reportesRoutes);
 
 // Exportar la aplicación para usarla en otros archivos
 module.exports = app;

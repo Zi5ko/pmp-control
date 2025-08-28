@@ -37,4 +37,8 @@ const upload = multer({
 // Ruta protegida y única
 router.post('/', verifyToken, upload.single('archivo'), subirEvidencia);
 
+// Ruta para descargar reportes PDF
+const { descargarPDF } = require('../controllers/reportesController');
+router.get('/descargar/:nombreArchivo', verifyToken, descargarPDF);
+
 module.exports = router;
