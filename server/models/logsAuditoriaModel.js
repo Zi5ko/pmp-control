@@ -21,15 +21,16 @@ async function crearLog({ usuario_id, accion, tabla, registro_id }) {
 }
 
 async function obtenerLogsAuditoria() {
-  const result = await db.query(`
+  const result = await pool.query(`
     SELECT l.*, u.nombre AS usuario
     FROM logs_auditoria l
     LEFT JOIN usuarios u ON l.usuario_id = u.id
     ORDER BY l.fecha DESC
   `);
   return result.rows;
-};
+}
 
-module.exports = { crearLog,
+module.exports = {
+  crearLog,
   obtenerLogsAuditoria
- };
+};

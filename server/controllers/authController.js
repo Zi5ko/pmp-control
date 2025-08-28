@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const db = require('../db');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 
 exports.startGoogleAuth = passport.authenticate('google', { scope: ['profile', 'email'] });

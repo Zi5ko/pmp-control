@@ -1,7 +1,7 @@
 // server/middlewares/auth.js
 const jwt = require('jsonwebtoken');
 
-exports.verifyToken = (req, res, next) => {
+function verifyToken(req, res, next) {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
   console.log("🔐 Token recibido:", token); // 👈 Agrega esto
@@ -16,10 +16,10 @@ exports.verifyToken = (req, res, next) => {
     console.error("❌ Token inválido:", e.message); // 👈 También esto
     return res.status(401).json({ error: 'Token inválido' });
   }
-};
+}
 
-// Asegura carpeta de uploads
-module.exports = (req, res, next) => {
+// Middleware para proteger acceso a archivos subidos
+function authUploads(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).send('Acceso no autorizado: falta token');
@@ -37,4 +37,6 @@ module.exports = (req, res, next) => {
   } catch (err) {
     return res.status(401).send('Token inválido');
   }
-};
+}
+
+module.exports = { verifyToken, authUploads };
