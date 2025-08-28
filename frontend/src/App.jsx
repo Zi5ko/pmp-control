@@ -1,4 +1,3 @@
-//frontend/src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Recuperar from "./pages/auth/Recuperar";
@@ -18,7 +17,7 @@ import InicioESMP from "./roles/esmp/Inicio";
 import Usuarios from "./pages/functions/Usuarios";
 import Equipos from "./pages/functions/Equipos";
 import Reportes from "./pages/functions/Reportes";
-import Calendario from "./pages/functions/Calendario";
+import Alertas from "./pages/functions/Alertas";
 import Visualizar from "./pages/functions/ListaEquipos";
 import Planificacion from "./pages/functions/Planificacion";
 import AsignarOrdenes from "./pages/functions/AsignarOrden";
@@ -55,16 +54,13 @@ function App() {
         />
 
         {/* Acceso no autorizado */}
-        <Route
-          path="/no-autorizado"
-          element={<NoAutorizado />}
-        />
+        <Route path="/no-autorizado" element={<NoAutorizado />} />
 
         {/* ADMIN */}
         <Route
           path="/admin"
           element={
-            <ProtectedRoute role="administrador">
+            <ProtectedRoute allowedRoles={[1]}>
               <LayoutBase />
             </ProtectedRoute>
           }
@@ -73,26 +69,27 @@ function App() {
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="equipos" element={<Equipos />} />
           <Route path="reportes" element={<Reportes />} />
-          <Route path="calendario" element={<Calendario />} />
+          <Route path="alertas" element={<Alertas />} />
           <Route path="lista-equipos" element={<Visualizar />} />
           <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="historial" element={<HistorialTecnico />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
           <Route path="registros-firmas" element={<RegistrosFirmas />} />
+          <Route path="auditoria" element={<Auditoria />} />
         </Route>
 
         {/* TECNICO */}
         <Route
           path="/tecnico"
           element={
-            <ProtectedRoute role="técnico">
+            <ProtectedRoute allowedRoles={[2]}>
               <LayoutBase />
             </ProtectedRoute>
           }
         >
           <Route index element={<InicioTecnico />} />
-          <Route path="calendario" element={<Calendario />} />
+          <Route path="alertas" element={<Alertas />} />
           <Route path="historial" element={<HistorialTecnico />} />
           <Route path="registros-firmas" element={<RegistrosFirmas />} />
         </Route>
@@ -101,13 +98,13 @@ function App() {
         <Route
           path="/supervisor"
           element={
-            <ProtectedRoute role="supervisor">
+            <ProtectedRoute allowedRoles={[3]}>
               <LayoutBase />
             </ProtectedRoute>
           }
         >
           <Route index element={<InicioSupervisor />} />
-          <Route path="calendario" element={<Calendario />} />
+          <Route path="alertas" element={<Alertas />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
         </Route>
@@ -116,7 +113,7 @@ function App() {
         <Route
           path="/responsable"
           element={
-            <ProtectedRoute role="responsable_institucional">
+            <ProtectedRoute allowedRoles={[4]}>
               <LayoutBase />
             </ProtectedRoute>
           }
@@ -124,8 +121,8 @@ function App() {
           <Route index element={<InicioResponsable />} />
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="reportes" element={<Reportes />} />
-          <Route path="auditoria" element={<p>Auditoría (placeholder)</p>} />
-          <Route path="calendario" element={<Calendario />} />
+          <Route path="auditoria" element={<Auditoria />} />
+          <Route path="alertas" element={<Alertas />} />
           <Route path="lista-equipos" element={<Visualizar />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
@@ -135,7 +132,7 @@ function App() {
         <Route
           path="/esmp"
           element={
-            <ProtectedRoute role="esmp">
+            <ProtectedRoute allowedRoles={[5]}>
               <LayoutBase />
             </ProtectedRoute>
           }
@@ -144,9 +141,10 @@ function App() {
           <Route path="usuarios" element={<Usuarios />} />
           <Route path="equipos" element={<Equipos />} />
           <Route path="reportes" element={<Reportes />} />
-          <Route path="calendario" element={<Calendario />} />
+          <Route path="alertas" element={<Alertas />} />
           <Route path="visualizar" element={<Visualizar />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
+          <Route path="auditoria" element={<Auditoria />} />
         </Route>
 
         {/* Fallback */}

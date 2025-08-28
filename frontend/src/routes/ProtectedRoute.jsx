@@ -1,6 +1,7 @@
+// frontend/src/routes/ProtectedRoute.jsx
 import { Navigate, Outlet } from "react-router-dom";
 
-export default function ProtectedRoute({ role, children }) {
+export default function ProtectedRoute({ allowedRoles = [], children }) {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -8,10 +9,10 @@ export default function ProtectedRoute({ role, children }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (role && user.rol_nombre !== role) {
+  // Si se definen roles permitidos, validar contra el rol_id del usuario
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.rol_id)) {
     return <Navigate to="/no-autorizado" replace />;
   }
 
-  // Revisar si el token es válido
   return children ? children : <Outlet />;
 }

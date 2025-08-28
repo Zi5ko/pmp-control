@@ -1,6 +1,7 @@
 //frontend/src/pages/functions/HistorialTécnico.jsx
 import { useEffect, useState } from "react";
 import { getHistorialOrdenes } from "../../services/ordenesServices";
+import { descargarReportePDF } from "../../services/reportesService";
 import {
   FileText,
   Image,
@@ -8,7 +9,8 @@ import {
   AudioLines,
   Archive,
   Table,
-  FileSignature
+  FileSignature,
+  Download,
 } from "lucide-react";
 
 export default function HistorialTecnico() {
@@ -26,12 +28,12 @@ export default function HistorialTecnico() {
   useEffect(() => {
     fetchOrdenes();
   }, []);
-  
+
   const getFileIcon = (tipo) => {
     if (!tipo) return <FileText className="w-4 h-4" />;
-  
+
     const t = tipo.toLowerCase();
-  
+
     if (t.includes("pdf")) return <FileText className="w-4 h-4 text-red-600" />;
     if (t.includes("word") || t.includes("msword"))
       return <FileSignature className="w-4 h-4 text-blue-600" />;
@@ -41,11 +43,20 @@ export default function HistorialTecnico() {
     if (t.includes("video")) return <Video className="w-4 h-4 text-indigo-600" />;
     if (t.includes("audio")) return <AudioLines className="w-4 h-4 text-yellow-600" />;
     if (t.includes("zip") || t.includes("rar")) return <Archive className="w-4 h-4 text-gray-600" />;
-  
+
     return <FileText className="w-4 h-4" />;
   };
 
   const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
+  const handleDescargarPDF = async (ordenId) => {
+    try {
+      const nombreArchivo = `reporte_orden_${ordenId}.pdf`;
+      await descargarReportePDF(nombreArchivo);
+    } catch (err) {
+      alert("No se pudo descargar el PDF.");
+    }
+  };
 
   return (
     <div className="p-4">
@@ -76,16 +87,21 @@ export default function HistorialTecnico() {
                 Estado: {orden.estado}
               </p>
 
-              {/* Agregar las evidencias si se cargan dentro del objeto orden */}
+              {orden.estado === "validada" && (
+                <button
+                  onClick={() => handleDescargarPDF(orden.id)}
+                  className="mt-2 px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" /> Descargar PDF firmado
+                </button>
+              )}
+
               {orden.evidencias?.length > 0 ? (
                 <div className="mt-2">
                   <p className="font-semibold text-sm mb-1">Evidencias:</p>
                   <ul className="text-sm text-gray-700 space-y-1">
                     {orden.evidencias.map((ev, idx) => {
-                      // Asegurarse que la URL comience con una /
-                      const url = ev.url.startsWith("/")
-              ? ev.url : `/${ev.url}`;
-
+                      const url = ev.url.startsWith("/") ? ev.url : `/${ev.url}`;
                       return (
                         <li key={idx} className="flex items-center gap-2">
                           <a

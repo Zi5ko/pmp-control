@@ -1,128 +1,31 @@
-//frontend/src/components/Sidebar.jsx
+// frontend/src/components/Sidebar.jsx
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LogOut,
-  Calendar,
-  FileText,
-  Users,
-  MonitorDot,
   LayoutDashboard,
-  Wrench,
   ClipboardList,
+  Wrench,
+  FileText,
+  MonitorDot,
+  Users,
+  UserCheck,
+  ClockIcon,
+  Calendar,
   Settings,
   User,
   ChevronDown,
   ChevronUp,
-  UserCheck,
-  ClockIcon,
 } from "lucide-react";
-import logo from "../assets/hosdip logo_Logo Original Blanco.png";
 
-const menuPorRol = {
-  administrador: [
-    { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/planificacion", label: "Planificación", icon: ClipboardList },
-    {
-      label: "Mantenimiento",
-      icon: Wrench,
-      children: [
-        { path: "/admin/reportes", label: "Ejecutar Mantenimiento", icon: ClipboardList },
-        { path: "/admin/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
-        { path: "/admin/historial", label: "Historial Técnico", icon: ClockIcon },
-        { path: "/admin/validacion", label: "Validar Mantenimientos", icon: ClipboardList },
-        { path: "/admin/registros-firmas", label: "Registros y Firmas", icon: FileText }
-      ]
-    },
-    {
-      label: "Gestión de Equipos",
-      icon: MonitorDot,
-      children: [
-        { path: "/admin/equipos", label: "Registrar Equipos", icon: ClipboardList },
-        { path: "/admin/lista-equipos", label: "Lista de Equipos", icon: Wrench }
-      ]
-    },
-    { path: "/admin/calendario", label: "Auditoría y Reportes", icon: FileText },
-    { path: "/admin/usuarios", label: "Gestión de usuarios y equipos", icon: Users },
-    { path: "/admin/perfil", label: "Perfil de usuario", icon: User }
-  ],
-  tecnico: [
-    { path: "/tecnico", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/tecnico/calendario", label: "Calendario", icon: Calendar },
-    {
-      label: "Mantenimiento",
-      icon: Wrench,
-      children: [
-        { path: "/tecnico/historial", label: "Historial técnico", icon: ClockIcon },
-        { path: "/tecnico/registros-firmas", label: "Registros y Firmas", icon: FileText }
-      ]
-    },
-    { path: "/tecnico/perfil", label: "Perfil de usuario", icon: User }
-  ],
-  supervisor: [
-    { path: "/supervisor", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/supervisor/calendario", label: "Calendario", icon: Calendar },
-    { path: "/supervisor/validacion", label: "Aprobación", icon: ClipboardList },
-    {
-      label: "Mantenimiento",
-      icon: Wrench,
-      children: [
-        { path: "/supervisor/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
-        { path: "/supervisor/validacion", label: "Validar Mantenimientos", icon: ClipboardList }
-      ]
-    },
-    { path: "/supervisor/perfil", label: "Perfil de usuario", icon: User }
-  ],
-  esmp: [
-    { path: "/esmp", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/esmp/calendario", label: "Calendario", icon: Calendar },
-    {
-      label: "Mantenimiento",
-      icon: Wrench,
-      children: [
-        { path: "/esmp/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck }
-      ]
-    },
-    {
-      label: "Gestión de Equipos",
-      icon: MonitorDot,
-      children: [
-        { path: "/esmp/equipos", label: "Registrar Equipos", icon: ClipboardList },
-        { path: "/esmp/lista-equipos", label: "Lista de Equipos", icon: Wrench },
-      ]
-    },
-    { path: "/esmp/planificar", label: "Aprobación", icon: Settings },
-    { path: "/esmp/usuarios", label: "Gestión de usuarios y equipos", icon: Users },
-    { path: "/esmp/reportes", label: "Auditoría y Reportes", icon: FileText },
-    { path: "/esmp/perfil", label: "Perfil de usuario", icon: User }
-  ],
-  responsable_institucional: [
-    { path: "/responsable", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/responsable/calendario", label: "Calendario", icon: Calendar },
-    { path: "/responsable/reportes", label: "Auditoría y Reportes", icon: FileText },
-    { path: "/responsable/auditoria", label: "Aprobación", icon: ClipboardList },
-    { path: "/responsable/usuarios", label: "Gestión de usuarios y equipos", icon: Users },
-    { path: "/responsable/planificar", label: "Planificación", icon: ClipboardList },
-    {
-      label: "Mantenimiento",
-      icon: Wrench,
-      children: [
-        { path: "/responsable/reportes", label: "Ejecutar Mantenimiento", icon: ClipboardList },
-        { path: "/responsable/asignar-ordenes", label: "Asignar Órdenes", icon: UserCheck },
-        { path: "/responsable/validacion", label: "Validar Mantenimientos", icon: ClipboardList }
-      ]
-    },
-    { path: "/responsable/perfil", label: "Perfil de usuario", icon: User }
-  ]
-};
+import logo from "../assets/hosdip logo_Logo Original Blanco.png";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  const rol = user?.rol_nombre;
+  const rolId = user?.rol_id; // 1=admin, 2=técnico, 3=supervisor, 4=responsable institucional, 5=esmp
 
-  const items = menuPorRol[rol] || [];
   const [openSubmenus, setOpenSubmenus] = useState({});
 
   const toggleSubmenu = (label) => {
@@ -134,6 +37,68 @@ export default function Sidebar() {
     navigate("/login");
   };
 
+  const menuItems = [
+    {
+      path: `/${user?.rol_nombre}`,
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      roles: [1, 2, 3, 4, 5],
+    },
+    {
+      label: "Mantenimiento",
+      icon: Wrench,
+      roles: [1, 2, 3, 4, 5],
+      children: [
+        { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 4] },
+        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 5] },
+        { path: `/${user?.rol_nombre}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
+        { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 4] },
+        { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
+      ]
+    },
+    {
+      label: "Gestión de Equipos",
+      icon: MonitorDot,
+      roles: [1, 5],
+      children: [
+        { path: `/${user?.rol_nombre}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 5] },
+        { path: `/${user?.rol_nombre}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 5] },
+      ]
+    },
+    {
+      path: `/${user?.rol_nombre}/alertas`,
+      label: "Alertas",
+      icon: FileText,
+      roles: [1, 3, 4, 5]
+    },
+    {
+      path: `/${user?.rol_nombre}/auditoria`,
+      label: "Logs de Auditoría",
+      icon: Calendar,
+      roles: [1, 4, 5]
+    },
+    {
+      path: `/${user?.rol_nombre}/usuarios`,
+      label: "Gestión de usuarios y equipos",
+      icon: Users,
+      roles: [1, 4, 5]
+    },
+    {
+      path: `/${user?.rol_nombre}/planificacion`,
+      label: "Planificación",
+      icon: ClipboardList,
+      roles: [1, 4]
+    },
+    {
+      path: `/${user?.rol_nombre}/perfil`,
+      label: "Perfil de usuario",
+      icon: User,
+      roles: [1, 2, 3, 4, 5]
+    }
+  ];
+
+  const filteredItems = menuItems.filter(item => item.roles.includes(rolId));
+
   return (
     <div className="w-64 bg-[#111A3A] text-white min-h-screen flex flex-col justify-between p-4">
       <div>
@@ -141,8 +106,11 @@ export default function Sidebar() {
           <img src={logo} alt="HOSDIP" className="w-auto h-20 object-contain" />
         </div>
         <ul className="space-y-2">
-          {items.map((item) => {
+          {filteredItems.map((item) => {
             if (item.children) {
+              const visibleChildren = item.children.filter(child => child.roles.includes(rolId));
+              if (visibleChildren.length === 0) return null;
+
               const isOpen = openSubmenus[item.label];
               return (
                 <li key={item.label}>
@@ -158,7 +126,7 @@ export default function Sidebar() {
                   </button>
                   {isOpen && (
                     <ul className="ml-5 mt-1 space-y-1">
-                      {item.children.map((child) => (
+                      {visibleChildren.map((child) => (
                         <li key={child.path}>
                           <Link
                             to={child.path}
@@ -182,7 +150,7 @@ export default function Sidebar() {
             return (
               <li key={item.path}>
                 <Link
-                  to={item.path || "/"}
+                  to={item.path}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition ${
                     location.pathname === item.path
                       ? "bg-[#D0FF34] text-[#111A3A] font-semibold"
