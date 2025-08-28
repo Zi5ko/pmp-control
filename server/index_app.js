@@ -55,7 +55,7 @@ app.get('/health', (req, res) => {
 app.use('/api', require('./routes/healthRoutes'));
 
 // Middleware para servir archivos estáticos de la carpeta "uploads"
-const authUploads = require('./middlewares/auth');
+const { authUploads } = require('./middlewares/auth');
 app.use('/uploads', authUploads, express.static(path.join(__dirname, 'uploads')));
 
 // Rutas para manejar firmas
