@@ -1,35 +1,63 @@
 // src/pages/functions/Planificacion.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
 import MiniCalendar from "../../components/MiniCalendar";
 import CalendarContainer from "../../components/calendar/CalendarContainer";
+import FloatingBanner from "../../components/FloatingBanner";
+import SuccessBanner from "../../components/SuccesBanner";
+import ErrorBanner from "../../components/ErrorBanner";
 
 export default function Planificacion() {
-  const [eventos, setEventos] = useState([]);
+  const [eventosTotales, setEventosTotales] = useState([]);
+  const [eventosFiltrados, setEventosFiltrados] = useState([]);
   const [faltantes, setFaltantes] = useState([]);
   const [recargando, setRecargando] = useState(false);
+  const [filtrosCriticidad, setFiltrosCriticidad] = useState({
+    crítico: true,
+    relevante: true,
+    instalación: true
+  });
 
+  const [equipoAProgramar, setEquipoAProgramar] = useState(null);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [mostrarSuccess, setMostrarSuccess] = useState(false);
+  const [mensajeSuccess, setMensajeSuccess] = useState("");
+  const [mostrarError, setMostrarError] = useState(false);
+  const [mensajeError, setMensajeError] = useState("");
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
+
+  // 👉 Cargar eventos
   const fetchEventos = async () => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/proyeccion`);
-      const eventosConvertidos = data.map((orden) => ({
-        id: orden.equipo_id,
-        title: `${orden.nombre} (Proyectado)`,
-        start: new Date(orden.fecha),
-        end: new Date(orden.fecha),
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/eventos`, config);
+
+      const eventosConvertidos = data.map((evento) => ({
+        id: evento.id?.toString() || `p-${evento.equipo_id}-${evento.start}`,
+        title: evento.title,
+        start: new Date(evento.start),
+        end: new Date(evento.end),
         allDay: true,
-        criticidad: orden.criticidad || "media",
-        estado: "proyectado",
-        ubicacion: orden.ubicacion,
-        plan: orden.plan,
+        criticidad: evento.criticidad || "media",
+        estado: evento.estado || "proyectado",
+        tipo: evento.tipo || "proyectado",
+        serie: evento.serie || "-",
+        plan: evento.plan || "-",
+        ubicacion: evento.ubicacion || "-",
+        equipo_id: evento.equipo_id
       }));
-      setEventos(eventosConvertidos);
+
+      setEventosTotales(eventosConvertidos);
     } catch (error) {
       console.error("❌ Error al cargar eventos:", error);
     }
   };
 
+  // 👉 Cargar equipos sin programación
   const fetchFaltantes = async () => {
     try {
       const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/faltantes`);
@@ -39,79 +67,149 @@ export default function Planificacion() {
     }
   };
 
-  const programarEquipo = async (equipo_id, nombre) => {
-    const confirmar = window.confirm(`¿Deseas programar el equipo "${nombre}" desde hoy?`);
-    if (!confirmar) return;
+  // 👉 Aplicar filtros por criticidad
+  const aplicarFiltroCriticidad = () => {
+    const activos = Object.keys(filtrosCriticidad).filter(c => filtrosCriticidad[c]);
+    const filtrados = eventosTotales.filter(ev => activos.includes(ev.criticidad));
+    setEventosFiltrados(filtrados);
+  };
+
+  // 👉 Abrir banner de confirmación
+  const programarEquipo = (equipo_id, nombre) => {
+    setEquipoAProgramar({ equipo_id, nombre });
+    setMostrarConfirmacion(true);
+  };
+
+  // 👉 Confirmar programación
+  const confirmarProgramacion = async () => {
+    setMostrarConfirmacion(false);
+    setRecargando(true);
 
     try {
-      setRecargando(true);
       await axios.post(`${import.meta.env.VITE_API_URL}/ordenes`, {
-        equipo_id,
+        equipo_id: equipoAProgramar.equipo_id,
         fecha_programada: new Date().toISOString().slice(0, 10),
-        estado: 'pendiente'
+        estado: "pendiente"
       });
 
-      toast.success("Equipo programado con éxito ✅");
-      await fetchFaltantes();
+      setMensajeSuccess(`✅ El equipo "${equipoAProgramar.nombre}" fue programado con éxito.`);
+      setMostrarSuccess(true);
       await fetchEventos();
+      await fetchFaltantes();
     } catch (error) {
       console.error("❌ Error al programar equipo:", error);
-      toast.error("Error al programar equipo ❌");
+      setMensajeError("❌ Ocurrió un error al programar el equipo.");
+      setMostrarError(true);
     } finally {
       setRecargando(false);
     }
   };
 
+  // 👉 Efectos
   useEffect(() => {
     fetchEventos();
     fetchFaltantes();
   }, []);
 
+  useEffect(() => {
+    aplicarFiltroCriticidad();
+  }, [eventosTotales, filtrosCriticidad]);
+
+  const toggleCriticidad = (tipo) => {
+    setFiltrosCriticidad((prev) => ({
+      ...prev,
+      [tipo]: !prev[tipo]
+    }));
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row p-6 gap-6">
-      {/* PANEL IZQUIERDO */}
-      <div className="w-full lg:w-72 flex flex-col gap-4 order-2 lg:order-1">
-        {/* Mini calendario */}
-        <div>
+    <>
+      <div className="flex flex-col lg:flex-row p-6 gap-6">
+        {/* PANEL IZQUIERDO */}
+        <div className="w-full lg:w-72 flex flex-col gap-4 order-2 lg:order-1">
           <MiniCalendar />
-        </div>
 
-        {/* Filtros */}
-        <div className="bg-[#EFF3FA] rounded-lg shadow p-4">
-          <h3 className="text-sm font-semibold mb-2 text-[#111A3A]">Tareas</h3>
-          <ul className="space-y-2 text-sm text-[#111A3A]">
-            <li><input type="checkbox" defaultChecked /> Mantenimientos</li>
-            <li><input type="checkbox" /> Reuniones</li>
-            <li><input type="checkbox" /> Revisiones</li>
-          </ul>
-        </div>
-
-        {/* Equipos faltantes */}
-        {faltantes.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-300 rounded-lg shadow p-4">
-            <h2 className="text-sm font-semibold text-yellow-800 mb-2">Equipos sin programación</h2>
-            <ul className="text-xs space-y-2">
-              {faltantes.map((eq) => (
-                <li key={eq.equipo_id} className="flex justify-between items-center">
-                  <span>{eq.nombre}</span>
-                  <button
-                    onClick={() => programarEquipo(eq.equipo_id, eq.nombre)}
-                    disabled={recargando}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
-                  >
-                    Programar
-                  </button>
+          {/* Filtro de criticidad */}
+          <div className="bg-[#5C7BA1] rounded-xl shadow p-4 text-white">
+            <h3 className="text-sm font-semibold mb-2">Tareas</h3>
+            <ul className="space-y-2 text-sm">
+              {["crítico", "relevante", "instalación"].map((tipo) => (
+                <li key={tipo}>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filtrosCriticidad[tipo]}
+                      onChange={() => toggleCriticidad(tipo)}
+                      className="mr-2 accent-white"
+                    />
+                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                  </label>
                 </li>
               ))}
             </ul>
           </div>
-        )}
+
+          {/* Equipos faltantes */}
+          {faltantes.length > 0 && (
+            <div className="bg-[#5C7BA1] rounded-xl shadow p-4 text-white">
+              <h2 className="text-sm font-semibold mb-2">Equipos sin programación</h2>
+              <ul className="text-xs space-y-2">
+                {faltantes.slice(0, 5).map((eq) => (
+                  <li key={eq.equipo_id} className="flex justify-between items-center">
+                    <span>{eq.nombre}</span>
+                    <button
+                      onClick={() => programarEquipo(eq.equipo_id, eq.nombre)}
+                      disabled={recargando}
+                      className="bg-white text-[#5C7BA1] text-xs px-2 py-0.5 rounded hover:bg-gray-100"
+                    >
+                      Programar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Mostrar mensaje de equipos adicionales */}
+              {faltantes.length > 5 && (
+                <div className="mt-2 text-center">
+                  <p className="text-xs font-semibold">+ {faltantes.length - 5} equipos</p>
+                </div>
+              )}
+
+              {/* Botón de gestión */}
+              <button
+                onClick={() => navigate(`/${user?.rol_nombre}/gestion`)}
+                className="mt-4 w-full text-xs bg-white text-[#5C7BA1] py-1.5 rounded hover:bg-gray-100 font-semibold"
+              >
+                Ir a gestión avanzada de planificación
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* CALENDARIO PRINCIPAL */}
+        <div className="w-full order-1 lg:order-2">
+          <CalendarContainer eventos={eventosFiltrados} />
+        </div>
       </div>
 
-      {/* CALENDARIO PRINCIPAL */}
-      <div className="w-full order-1 lg:order-2">
-        <CalendarContainer eventos={eventos} />
-      </div>
-    </div>
+      {/* 🟨 CONFIRMACIÓN */}
+      {mostrarConfirmacion && equipoAProgramar && (
+        <FloatingBanner
+          mensaje={`¿Deseas programar el equipo "${equipoAProgramar.nombre}" desde hoy?`}
+          onConfirm={confirmarProgramacion}
+          onCancel={() => setMostrarConfirmacion(false)}
+        />
+      )}
+
+      {/* ✅ ÉXITO */}
+      {mostrarSuccess && (
+        <SuccessBanner mensaje={mensajeSuccess} onClose={() => setMostrarSuccess(false)} />
+      )}
+
+      {/* ❌ ERROR */}
+      {mostrarError && (
+        <ErrorBanner mensaje={mensajeError} onClose={() => setMostrarError(false)} />
+      )}
+    </>
   );
 }

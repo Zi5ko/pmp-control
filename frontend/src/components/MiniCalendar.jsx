@@ -1,19 +1,37 @@
+import React from "react";
 import { useState } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isToday } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function MiniCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const minDate = new Date(2000, 0, 1); // Fecha mínima permitida
+  
+  const handlePreviousMonth = () => {
+    const newMonth = subMonths(currentMonth, 1);
+    if (newMonth >= minDate) {
+      setCurrentMonth(newMonth);
+    }
+  };
+  
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
 
   const renderHeader = () => (
     <div className="flex justify-between items-center mb-4">
       <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>&lt;</button>
-      <span className="text-md font-semibold">{format(currentMonth, "MMMM yyyy")}</span>
+      <span className="text-md font-semibold">
+        {format(currentMonth, "MMMM yyyy", { locale: es })}
+      </span>
       <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>&gt;</button>
     </div>
   );
 
   const renderDays = () => {
-    const days = ["L", "M", "M", "J", "V", "S", "D"];
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const days = Array.from({ length: 7 }, (_, i) => format(addDays(start, i), "EEEEE", { locale: es }));
+    
     return (
       <div className="grid grid-cols-7 text-center text-sm text-gray-500 mb-2">
         {days.map((day, idx) => (

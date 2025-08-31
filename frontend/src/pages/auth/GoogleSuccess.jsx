@@ -1,6 +1,8 @@
+//frontend/src/pages/auth/GoogleSuccess.jsx
 import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { getRutaPorRol } from "../../utils/rutasPorRol";
 
 export default function GoogleSuccess() {
   const navigate = useNavigate();
@@ -15,38 +17,22 @@ export default function GoogleSuccess() {
       return;
     }
 
+    // Guardar token
     localStorage.setItem("token", token);
 
     axios.get("http://localhost:3000/api/auth/me", {
-      withCredentials: true
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
     })
       .then((res) => {
         const user = res.data;
         localStorage.setItem("user", JSON.stringify(user));
-
-        // Redirección según rol_nombre
-        switch (user.rol_nombre) {
-          case "administrador":
-            navigate("/admin");
-            break;
-          case "técnico":
-            navigate("/tecnico");
-            break;
-          case "supervisor":
-            navigate("/supervisor");
-            break;
-          case "responsable_institucional":
-            navigate("/responsable");
-            break;
-          case "esmp":
-            navigate("/esmp");
-            break;
-          default:
-            navigate("/no-autorizado");
-        }
+        navigate(getRutaPorRol(user.rol_nombre));
       })
       .catch((err) => {
-        console.error("❌ Error en /me", err);
+        console.error("❌ Error al obtener usuario:", err);
+        localStorage.setItem("login_error", "Acceso de negado. Cuenta no registrada.");
         navigate("/login");
       });
   }, [navigate, searchParams]);

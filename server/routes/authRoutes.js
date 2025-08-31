@@ -1,5 +1,7 @@
+//server/routes/authRoutes.js
 const passport = require('passport');
 const router = require('express').Router();
+const { verifyToken } = require('../middlewares/auth');
 const {
   startGoogleAuth,
   googleCallback,
@@ -15,6 +17,6 @@ router.get('/google/callback', googleCallback);
 router.post('/login', localLogin);
 
 // Obtener datos del usuario autenticado
-router.get('/me', me); // lee desde cookie 'jwt'
+router.get('/me', verifyToken, me); // lee desde cookie 'jwt'
 
 module.exports = router;

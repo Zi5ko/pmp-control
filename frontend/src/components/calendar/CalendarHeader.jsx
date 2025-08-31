@@ -1,19 +1,27 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-export default function CalendarHeader({ vista, setVista, fechaActual }) {
-  const mes = vista === "mes"
-    ? format(fechaActual, "yyyy", { locale: es }) // Vista de mes: mostrar año
-    : format(fechaActual, "MMMM yyyy", { locale: es }); // Vista de semana o día: mostrar mes y año
+export default function CalendarHeader({
+  vista,
+  setVista,
+  fechaActual,
+  avanzar,
+  retroceder,
+  irAFechaActual,
+}) {
+  const titulo =
+    vista === "mes"
+      ? format(fechaActual, "yyyy", { locale: es })
+      : format(fechaActual, "MMMM yyyy", { locale: es });
 
   return (
     <div className="flex justify-between items-center px-2 mb-4">
       {/* Nombre del mes */}
-      <h2 className="text-xl font-bold text-[#111A3A] capitalize">{mes}</h2>
+      <h2 className="text-xl font-bold text-[#111A3A] capitalize">{titulo}</h2>
 
-      {/* Selector de vista */}
+      {/* Selector de vista y botón Hoy */}
       <div className="flex bg-white border border-gray-200 rounded-full overflow-hidden shadow-sm">
-        {["mes", "semana", "dia"].map((tipo, idx) => (
+        {["mes", "semana"].map((tipo, idx) => (
           <button
             key={idx}
             onClick={() => setVista(tipo)}
@@ -26,6 +34,13 @@ export default function CalendarHeader({ vista, setVista, fechaActual }) {
             {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
           </button>
         ))}
+        {/* Botón "Hoy" con formato igual, pero fondo gris */}
+        <button
+          onClick={irAFechaActual}
+          className="px-4 py-1 text-sm font-semibold bg-gray-100 text-[#111A3A] hover:bg-gray-200"
+        >
+          Hoy
+        </button>
       </div>
     </div>
   );

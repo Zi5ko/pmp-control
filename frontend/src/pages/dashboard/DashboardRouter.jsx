@@ -1,6 +1,7 @@
 // frontend/src/pages/dashboard/DashboardRouter.jsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getRutaPorRol } from "../../utils/rutasPorRol";
 
 export default function DashboardRouter() {
   const navigate = useNavigate();
@@ -13,13 +14,7 @@ export default function DashboardRouter() {
       return;
     }
 
-    const rol = stored.rol_nombre; // administrador, tecnico, supervisor, esmp, responsable_institucional
-
-    if (rol) {
-      navigate(`/${rol}`);
-    } else {
-      navigate("/login");
-    }
+    navigate(getRutaPorRol(stored.rol_nombre));
   }, [navigate]);
 
   return null;

@@ -8,7 +8,7 @@ import LayoutBase from "./components/LayoutBase";
 import DashboardRouter from "./pages/dashboard/DashboardRouter";
 import NoAutorizado from "./pages/auth/NoAutorizado";
 
-import InicioAdmin from "./roles/admin/Inicio";
+import InicioAdmin from "./roles/administrador/Inicio";
 import InicioTecnico from "./roles/tecnico/Inicio";
 import InicioSupervisor from "./roles/supervisor/Inicio";
 import InicioResponsable from "./roles/responsable/Inicio";
@@ -24,6 +24,8 @@ import AsignarOrdenes from "./pages/functions/AsignarOrden";
 import HistorialTecnico from "./pages/functions/HistorialTécnico";
 import ValidarOrdenes from "./pages/functions/ValidarOrdenes";
 import RegistrosFirmas from "./pages/functions/RegistrosFirmas";
+import Auditoria from "./pages/functions/Auditoria";
+import GestionPlanificacion from "./pages/functions/GestionPlanificacion";
 
 function App() {
   const isAuthenticated = () => {
@@ -56,9 +58,9 @@ function App() {
         {/* Acceso no autorizado */}
         <Route path="/no-autorizado" element={<NoAutorizado />} />
 
-        {/* ADMIN */}
+        {/* ADMINISTRADOR */}
         <Route
-          path="/admin"
+          path="/administrador"
           element={
             <ProtectedRoute allowedRoles={[1]}>
               <LayoutBase />
@@ -77,6 +79,7 @@ function App() {
           <Route path="validacion" element={<ValidarOrdenes />} />
           <Route path="registros-firmas" element={<RegistrosFirmas />} />
           <Route path="auditoria" element={<Auditoria />} />
+          <Route path="gestion" element={<GestionPlanificacion />} />
         </Route>
 
         {/* TECNICO */}

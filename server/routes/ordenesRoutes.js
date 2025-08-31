@@ -13,7 +13,6 @@ const {
   detalleOrden,
   calendarizarMantenimientos,
   ejecutarOrden,
-  proyeccionMantenimientos,
   equiposSinOrden,
   obtenerOrdenesPendientesAsignadas,
   asignarResponsableOrden,
@@ -23,7 +22,8 @@ const {
   validarOrden,
   obtenerReporteFirmado,
   obtenerOrdenesValidadas,
-  generarPDF
+  generarPDF,
+  obtenerEventosCalendario
 } = require('../controllers/ordenesController');
 
 // Rutas principales
@@ -56,7 +56,6 @@ router.get("/ejecutadas/no-validadas", verifyToken, listarOrdenesParaValidacion)
 router.put("/:id/validar", verifyToken, validarOrden);
 router.post('/calendarizar', calendarizarMantenimientos);
 router.put('/:id/ejecutar', ejecutarOrden);
-router.get('/proyeccion', proyeccionMantenimientos);
 router.get('/faltantes', equiposSinOrden);
 router.get('/pendientes-asignadas', verifyToken, obtenerOrdenesPendientesAsignadas);
 router.get('/pendientes-sin-responsable', verifyToken, obtenerOrdenesSinResponsable);
@@ -65,5 +64,6 @@ router.get('/historial', verifyToken, obtenerHistorial);
 router.post('/:id/generar-reporte', verifyToken, generarPDF);
 router.get('/:id/reporte', obtenerReporteFirmado);
 router.get("/validadas", obtenerOrdenesValidadas);
+router.get("/eventos", verifyToken, obtenerEventosCalendario);
 
 module.exports = router;

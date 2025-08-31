@@ -45,18 +45,6 @@ export default function Sidebar() {
       roles: [1, 2, 3, 4, 5],
     },
     {
-      label: "Mantenimiento",
-      icon: Wrench,
-      roles: [1, 2, 3, 4, 5],
-      children: [
-        { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 4] },
-        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 5] },
-        { path: `/${user?.rol_nombre}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
-        { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 4] },
-        { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
-      ]
-    },
-    {
       label: "Gestión de Equipos",
       icon: MonitorDot,
       roles: [1, 5],
@@ -66,32 +54,44 @@ export default function Sidebar() {
       ]
     },
     {
-      path: `/${user?.rol_nombre}/alertas`,
-      label: "Alertas",
-      icon: FileText,
-      roles: [1, 3, 4, 5]
-    },
-    {
-      path: `/${user?.rol_nombre}/auditoria`,
-      label: "Logs de Auditoría",
+      path: `/${user?.rol_nombre}/planificacion`,
+      label: "Planificación de Mantenimientos",
       icon: Calendar,
       roles: [1, 4, 5]
     },
     {
+      label: "Mantenimiento",
+      icon: Wrench,
+      roles: [1, 2, 3, 4, 5],
+      children: [
+        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 5] },
+        { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 4] },
+        { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 4] },
+        { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
+        { path: `/${user?.rol_nombre}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
+      ]
+    },
+    {
+      path: `/${user?.rol_nombre}/alertas`,
+      label: "Alertas Automáticas",
+      icon: Settings,
+      roles: [1, 5]
+    },
+    {
       path: `/${user?.rol_nombre}/usuarios`,
-      label: "Gestión de usuarios y equipos",
+      label: "Gestión de Usuarios y Roles",
       icon: Users,
       roles: [1, 4, 5]
     },
     {
-      path: `/${user?.rol_nombre}/planificacion`,
-      label: "Planificación",
-      icon: ClipboardList,
-      roles: [1, 4]
+      path: `/${user?.rol_nombre}/auditoria`,
+      label: "Auditoría de Registros",
+      icon: FileText,
+      roles: [1, 4, 5]
     },
     {
       path: `/${user?.rol_nombre}/perfil`,
-      label: "Perfil de usuario",
+      label: "Perfil de Usuario",
       icon: User,
       roles: [1, 2, 3, 4, 5]
     }

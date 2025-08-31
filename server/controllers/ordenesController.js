@@ -1,6 +1,10 @@
-//server/controllers/ordenesController.js
+// server/controllers/ordenesController.js
 const path = require('path');
 const fs = require('fs');
+const db = require('../db');
+const { endOfWeek } = require("date-fns");
+const generarReportePDF = require('../utils/generarReportes');
+
 const {
   getOrdenes,
   getOrdenById,
@@ -13,9 +17,6 @@ const {
 } = require('../models/ordenesModel');
 
 const { crearLog } = require('../models/logsAuditoriaModel');
-const db = require('../db');
-const { endOfWeek } = require("date-fns");
-const generarReportePDF = require('../utils/generarReportes');
 
 const FRECUENCIA_SEMANAS = {
   mensual: 4,
@@ -62,6 +63,17 @@ async function crearNuevaOrden(req, res) {
     }
 
     const plan_id = result.rows[0].plan_id;
+
+    // Verifica que no exista ya una orden pendiente para este equipo
+    const { rowCount: ordenesActivas } = await db.query(`
+      SELECT 1 FROM ordenes_trabajo
+      WHERE equipo_id = $1 AND estado IN ('pendiente', 'reprogramada')
+      LIMIT 1
+    `, [equipo_id]);
+
+    if (ordenesActivas > 0) {
+      return res.status(409).json({ error: "Ya existe una orden activa para este equipo." });
+    }
 
     const insert = await db.query(
       `INSERT INTO ordenes_trabajo (equipo_id, plan_id, fecha_programada, estado)
@@ -223,64 +235,17 @@ async function ejecutarOrden(req, res) {
   }
 }
 
-// 8. Proyección
-async function proyeccionMantenimientos(req, res) {
-  try {
-    const { rows: equipos } = await db.query(`
-      SELECT e.id AS equipo_id, e.nombre, e.ubicacion, p.frecuencia
-      FROM equipos e
-      JOIN planes_mantenimiento p ON e.plan_id = p.id
-      WHERE p.activo = TRUE
-    `);
-
-    const proyecciones = [];
-    const hoy = new Date();
-
-    for (const equipo of equipos) {
-      const semanas = FRECUENCIA_SEMANAS[equipo.frecuencia];
-      if (!semanas) continue;
-
-      const { rows: ultimaOrden } = await db.query(`
-        SELECT fecha_programada
-        FROM ordenes_trabajo
-        WHERE equipo_id = $1
-        ORDER BY fecha_ejecucion DESC NULLS LAST, fecha_programada ASC
-        LIMIT 1
-      `, [equipo.equipo_id]);
-
-      const fechaBase = new Date(ultimaOrden[0]?.fecha_programada || hoy);
-
-      for (let i = 1; i <= 52 / semanas; i++) {
-        const proximaFecha = new Date(fechaBase);
-        proximaFecha.setDate(proximaFecha.getDate() + (semanas * 7 * i));
-
-        proyecciones.push({
-          equipo_id: equipo.equipo_id,
-          nombre: equipo.nombre,
-          ubicacion: equipo.ubicacion,
-          fecha: proximaFecha.toISOString().slice(0, 10)
-        });
-      }
-    }
-
-    res.json(proyecciones);
-  } catch (error) {
-    console.error("❌ Error al obtener proyección de mantenimientos:", error);
-    res.status(500).json({ error: "Error al generar proyección" });
-  }
-}
-
 // 9. Equipos sin orden
 async function equiposSinOrden(req, res) {
   try {
     const { rows } = await db.query(`
-      SELECT e.id AS equipo_id, e.nombre, e.ubicacion, e.criticidad, p.frecuencia
+      SELECT e.id AS equipo_id, e.nombre, e.ubicacion, e.criticidad, e.serie, p.nombre AS plan
       FROM equipos e
       JOIN planes_mantenimiento p ON e.plan_id = p.id
       WHERE p.activo = TRUE
       AND NOT EXISTS (
         SELECT 1 FROM ordenes_trabajo ot
-        WHERE ot.equipo_id = e.id
+        WHERE ot.equipo_id = e.id AND ot.estado IN ('pendiente', 'reprogramada')
       )
     `);
 
@@ -495,8 +460,92 @@ async function generarPDF(req, res) {
   }
 }
 
+// 19. Obtener todos los eventos (planificados y proyectados)
+async function obtenerEventosCalendario(req, res) {
+  try {
+    const eventos = [];
 
-// Exports
+    // 1. Obtener todas las órdenes reales (planificadas)
+    const { rows: ordenes } = await db.query(`
+      SELECT ot.id, ot.equipo_id, ot.plan_id, ot.fecha_programada, ot.estado,
+             eq.nombre, eq.serie, eq.criticidad, eq.ubicacion,
+             pm.nombre AS plan
+      FROM ordenes_trabajo ot
+      JOIN equipos eq ON ot.equipo_id = eq.id
+      JOIN planes_mantenimiento pm ON eq.plan_id = pm.id
+    `);
+
+    // Eventos reales planificados
+    ordenes.forEach((ot) => {
+      eventos.push({
+        id: ot.id,
+        equipo_id: ot.equipo_id,
+        title: ot.nombre,
+        start: ot.fecha_programada,
+        end: ot.fecha_programada,
+        allDay: true,
+        criticidad: ot.criticidad,
+        estado: ot.estado,
+        tipo: "planificado",
+        ubicacion: ot.ubicacion,
+        serie: ot.serie,
+        plan: ot.plan,
+      });
+    });
+
+    // 2. Obtener última OT registrada por equipo (independiente del estado)
+    const { rows: ultimasOTs } = await db.query(`
+      SELECT DISTINCT ON (e.id) 
+             e.id AS equipo_id,
+             e.nombre,
+             e.serie,
+             e.ubicacion,
+             e.criticidad,
+             pm.frecuencia,
+             pm.nombre AS plan,
+             ot.fecha_programada AS ultima_fecha
+      FROM equipos e
+      JOIN planes_mantenimiento pm ON e.plan_id = pm.id
+      JOIN ordenes_trabajo ot ON ot.equipo_id = e.id
+      WHERE pm.activo = TRUE
+      ORDER BY e.id, ot.fecha_programada DESC
+    `);
+
+    for (const eq of ultimasOTs) {
+      const semanas = FRECUENCIA_SEMANAS[eq.frecuencia];
+      if (!semanas || !eq.ultima_fecha) continue;
+
+      const fechaBase = new Date(eq.ultima_fecha);
+      const cantidadProyecciones = Math.floor(52 / semanas);
+
+      for (let i = 1; i <= cantidadProyecciones; i++) {
+        const proximaFecha = new Date(fechaBase);
+        proximaFecha.setDate(proximaFecha.getDate() + i * semanas * 7);
+
+        eventos.push({
+          id: `p-${eq.equipo_id}-${i}`,
+          equipo_id: eq.equipo_id,
+          title: eq.nombre,
+          start: proximaFecha.toISOString().slice(0, 10),
+          end: proximaFecha.toISOString().slice(0, 10),
+          allDay: true,
+          criticidad: eq.criticidad,
+          estado: "proyectado",
+          tipo: "proyectado",
+          ubicacion: eq.ubicacion,
+          serie: eq.serie,
+          plan: eq.plan,
+        });
+      }
+    }
+
+    res.json(eventos);
+  } catch (err) {
+    console.error("❌ Error al obtener eventos del calendario:", err);
+    res.status(500).json({ error: "Error al obtener eventos" });
+  }
+}
+
 module.exports = {
   listarOrdenes,
   obtenerOrden,
@@ -505,7 +554,6 @@ module.exports = {
   detalleOrden,
   calendarizarMantenimientos,
   ejecutarOrden,
-  proyeccionMantenimientos,
   equiposSinOrden,
   obtenerOrdenesPendientesAsignadas,
   obtenerOrdenesSinResponsable,
@@ -515,5 +563,6 @@ module.exports = {
   validarOrden,
   obtenerReporteFirmado,
   obtenerOrdenesValidadas,
-  generarPDF
+  generarPDF,
+  obtenerEventosCalendario
 };

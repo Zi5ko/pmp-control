@@ -1,4 +1,4 @@
-// src/components/calendar/WeekView.jsx
+//frontend/src/components/calendar/WeekView.jsx
 import { addDays, format, isSameDay, isToday, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -22,33 +22,37 @@ export default function WeekView({ fechaActual, eventos, onEventClick }) {
             }`}
           >
             {/* Número del día en esquina superior izquierda */}
-            <div
-              className={`absolute top-2 left-2 text-sm font-bold ${
-                esHoy ? "text-[#111A3A]" : "text-gray-700"
-              }`}
-            >
-              {format(dia, "d", { locale: es })}
-            </div>
+            <div className="absolute top-2 left-2">
+            {esHoy ? (
+              <div className="w-6 h-6 flex items-center justify-center rounded-full bg-[#D0FF34] text-[#111A3A] text-sm font-bold">
+                {format(dia, "d", { locale: es })}
+              </div>
+            ) : (
+              <div className="text-sm font-bold text-gray-700">
+                {format(dia, "d", { locale: es })}
+              </div>
+            )}
+          </div>
 
             {/* Eventos del día */}
-            <div className="mt-6 space-y-1 text-xs">
+            <div className="mt-8 space-y-1 text-xs">
               {eventosDelDia.length > 0 ? (
                 eventosDelDia.map((ev, idx) => (
                   <div
                     key={idx}
                     onClick={() => onEventClick(ev)}
-                    className="rounded px-2 py-1 cursor-pointer"
-                    style={{
-                      backgroundColor:
-                        ev.criticidad === "alta"
-                          ? "#F87171"
-                          : ev.criticidad === "media"
-                          ? "#FACC15"
-                          : "#60A5FA",
-                      color: "#111A3A",
-                    }}
+                    title={ev.title}
+                    className={`rounded px-2 py-1 cursor-pointer text-xs leading-snug line-clamp-3 break-words overflow-hidden ${
+                      ev.criticidad === "crítico"
+                        ? "bg-[#E01D00] text-white"
+                        : ev.criticidad === "relevante"
+                        ? "bg-[#FFC700] text-black"
+                        : "bg-[#C4C4C4] text-black"
+                    }`}
                   >
-                    {ev.title}
+                    <span title={ev.title}>
+                      ID{String(ev.equipo_id).padStart(4, '0')} - {ev.title}
+                    </span>
                   </div>
                 ))
               ) : (

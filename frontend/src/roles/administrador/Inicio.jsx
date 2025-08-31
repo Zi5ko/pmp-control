@@ -3,7 +3,7 @@ import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { ClipboardList, CheckCircle, Clock } from "lucide-react";
 import KpiCard from "../../components/KpiCard.jsx";
-import MiniCalendar from "../../components/MiniCalendar";
+import MiniCalendar from "../../components/MiniCalendar.jsx";
 
 
 export default function InicioAdmin() {

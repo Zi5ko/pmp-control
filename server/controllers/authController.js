@@ -1,3 +1,5 @@
+// server/controllers/authController.js
+
 const passport = require('passport');
 const db = require('../db');
 const bcrypt = require('bcryptjs');
@@ -8,8 +10,15 @@ exports.startGoogleAuth = passport.authenticate('google', { scope: ['profile', '
 
 exports.googleCallback = (req, res, next) => {
   passport.authenticate('google', { session: false }, (err, user) => {
-    if (err) return next(err);
-    if (!user) return res.status(401).send('No autorizado');
+    console.log("🔁 Google Callback ejecutado");
+    if (err) {
+      console.error("❌ Error en callback:", err); // LOG CRÍTICO
+      return next(err);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google`);
+    }
 
     const token = jwt.sign(
       { sub: user.id, email: user.email, rol_id: user.rol_id },
@@ -17,15 +26,8 @@ exports.googleCallback = (req, res, next) => {
       { expiresIn: '8h' }
     );
 
-    //Establecer cookie segura con el token
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: false,           // ⚠️ En producción con HTTPS, cambia a true
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 8 // 8 horas
-    });
+    console.log("✅ Token generado:", token);
 
-    //Redirige al frontend sin token en URL
     res.redirect(`${process.env.FRONTEND_URL}/auth/google/success?token=${token}`);
   })(req, res, next);
 };
@@ -81,19 +83,11 @@ exports.localLogin = async (req, res) => {
   }
 };
 
-// Endpoint to fetch user info from a JWT token
+// Endpoint protegido: devuelve info del usuario desde req.user
 exports.me = async (req, res) => {
-  const token = req.cookies.jwt;
-
-  if (!token) {
-    return res.status(401).json({ error: 'Token requerido' });
-  }
-
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'test-secret');
-    const userId = payload.sub;
+    const userId = req.user.sub;
 
-    // Consulta con JOIN para obtener el nombre del rol
     const result = await db.query(`
       SELECT u.id, u.email, u.nombre, u.rol_id, r.nombre AS rol_nombre
       FROM usuarios u
@@ -112,7 +106,7 @@ exports.me = async (req, res) => {
       rol_nombre: user.rol_nombre
     });
   } catch (e) {
-    console.error("❌ Error al verificar token:", e);
+    console.error("❌ Error en /me:", e);
     return res.status(401).json({ error: 'Token inválido' });
   }
 };
