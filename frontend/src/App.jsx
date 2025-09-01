@@ -11,7 +11,7 @@ import NoAutorizado from "./pages/auth/NoAutorizado";
 import InicioAdmin from "./roles/administrador/Inicio";
 import InicioTecnico from "./roles/tecnico/Inicio";
 import InicioSupervisor from "./roles/supervisor/Inicio";
-import InicioResponsable from "./roles/responsable-institucional/Inicio";
+import InicioResponsable from "./roles/responsable_institucional/Inicio";
 import InicioESMP from "./roles/esmp/Inicio";
 
 import Usuarios from "./pages/functions/Usuarios";
@@ -114,7 +114,7 @@ function App() {
 
         {/* RESPONSABLE */}
         <Route
-          path="/responsable-institucional"
+          path="/responsable_institucional"
           element={
             <ProtectedRoute allowedRoles={[5]}>
               <LayoutBase />

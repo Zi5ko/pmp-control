@@ -14,7 +14,7 @@ export const getRutaPorRol = (rolNombre) => {
     case "supervisor":
       return "/supervisor";
     case "responsable institucional":
-      return "/responsable-institucional";
+      return "/responsable_institucional";
     case "esmp":
       return "/esmp";
     default:

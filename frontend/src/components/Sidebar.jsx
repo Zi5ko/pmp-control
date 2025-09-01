@@ -77,7 +77,7 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}/alertas`,
       label: "Alertas Automáticas",
       icon: Settings,
-      roles: [1, 6]
+      roles: [1, 3, 6]
     },
     {
       path: `/${user?.rol_nombre}/usuarios`,
