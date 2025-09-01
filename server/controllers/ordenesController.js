@@ -311,7 +311,6 @@ async function asignarResponsableOrden(req, res) {
     const { responsable_id } = req.body;
 
     if (![1, 5, 6].includes(usuario.rol_id)) {
-
       return res.status(403).json({ error: "No autorizado para asignar técnicos" });
     }
 

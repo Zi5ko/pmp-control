@@ -13,7 +13,6 @@ import {
   ClockIcon,
   Calendar,
   Settings,
-  User,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -24,7 +23,6 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-
   const rolId = Number(user?.rol_id); // 1=admin, 2=técnico, 3=supervisor, 5=responsable institucional, 6=esmp
 
 
@@ -44,7 +42,6 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}`,
       label: "Dashboard",
       icon: LayoutDashboard,
-
       roles: [1, 2, 3, 5, 6],
 
     },
@@ -61,20 +58,17 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}/planificacion`,
       label: "Planificación de Mantenimientos",
       icon: Calendar,
-
       roles: [1, 5, 6]
 
     },
     {
       label: "Mantenimiento",
       icon: Wrench,
-
       roles: [1, 2, 3, 5, 6],
       children: [
         { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 5, 6] },
         { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 5] },
         { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 5] },
-
         { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
         { path: `/${user?.rol_nombre}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
       ]
@@ -89,7 +83,6 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}/usuarios`,
       label: "Gestión de Usuarios y Roles",
       icon: Users,
-
       roles: [1, 5, 6]
 
     },
@@ -97,17 +90,7 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}/auditoria`,
       label: "Auditoría de Registros",
       icon: FileText,
-
       roles: [1, 5, 6]
-
-    },
-    {
-      path: `/${user?.rol_nombre}/perfil`,
-      label: "Perfil de Usuario",
-      icon: User,
-
-      roles: [1, 2, 3, 5, 6]
-
     }
   ];
 

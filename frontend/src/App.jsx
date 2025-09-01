@@ -127,6 +127,7 @@ function App() {
           <Route path="auditoria" element={<Auditoria />} />
           <Route path="alertas" element={<Alertas />} />
           <Route path="lista-equipos" element={<Visualizar />} />
+          <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
         </Route>
@@ -145,7 +146,8 @@ function App() {
           <Route path="equipos" element={<Equipos />} />
           <Route path="reportes" element={<Reportes />} />
           <Route path="alertas" element={<Alertas />} />
-          <Route path="visualizar" element={<Visualizar />} />
+          <Route path="lista-equipos" element={<Visualizar />} />
+          <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="auditoria" element={<Auditoria />} />
         </Route>

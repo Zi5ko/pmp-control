@@ -20,7 +20,6 @@ export default function Equipos() {
 
   useEffect(() => {
     const rolId = Number(user?.rol_id);
-
     if (!user || ![1, 6].includes(rolId)) {
 
       navigate("/no-autorizado");
