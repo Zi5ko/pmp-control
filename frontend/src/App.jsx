@@ -116,7 +116,7 @@ function App() {
         <Route
           path="/responsable"
           element={
-            <ProtectedRoute allowedRoles={[4]}>
+            <ProtectedRoute allowedRoles={[5]}>
               <LayoutBase />
             </ProtectedRoute>
           }
