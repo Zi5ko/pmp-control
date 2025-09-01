@@ -19,7 +19,8 @@ export default function Equipos() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    if (!user || ![1, 5].includes(user.rol_id)) {
+    const rolId = Number(user?.rol_id);
+    if (!user || ![1, 5].includes(rolId)) {
       navigate("/no-autorizado");
     }
   }, [navigate, user]);

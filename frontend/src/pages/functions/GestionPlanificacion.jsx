@@ -19,7 +19,8 @@ export default function GestionPlanificacion() {
   const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
-    if (!user || ![1, 4, 5].includes(user.rol_id)) {
+    const rolId = Number(user?.rol_id);
+    if (!user || ![1, 4, 5].includes(rolId)) {
       navigate("/no-autorizado");
     }
   }, [navigate, user]);
