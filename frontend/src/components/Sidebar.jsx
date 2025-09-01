@@ -24,7 +24,7 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  const rolId = user?.rol_id; // 1=admin, 2=técnico, 3=supervisor, 4=responsable institucional, 5=esmp
+  const rolId = Number(user?.rol_id); // 1=admin, 2=técnico, 3=supervisor, 4=responsable institucional, 6=esmp
 
   const [openSubmenus, setOpenSubmenus] = useState({});
 
@@ -42,29 +42,29 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}`,
       label: "Dashboard",
       icon: LayoutDashboard,
-      roles: [1, 2, 3, 4, 5],
+      roles: [1, 2, 3, 4, 6],
     },
     {
       label: "Gestión de Equipos",
       icon: MonitorDot,
-      roles: [1, 5],
+      roles: [1, 6],
       children: [
-        { path: `/${user?.rol_nombre}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 5] },
-        { path: `/${user?.rol_nombre}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 5] },
+        { path: `/${user?.rol_nombre}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 6] },
+        { path: `/${user?.rol_nombre}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 6] },
       ]
     },
     {
       path: `/${user?.rol_nombre}/planificacion`,
       label: "Planificación de Mantenimientos",
       icon: Calendar,
-      roles: [1, 4, 5]
+      roles: [1, 4, 6]
     },
     {
       label: "Mantenimiento",
       icon: Wrench,
-      roles: [1, 2, 3, 4, 5],
+      roles: [1, 2, 3, 4, 6],
       children: [
-        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 5] },
+        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 6] },
         { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 4] },
         { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 4] },
         { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
@@ -75,25 +75,25 @@ export default function Sidebar() {
       path: `/${user?.rol_nombre}/alertas`,
       label: "Alertas Automáticas",
       icon: Settings,
-      roles: [1, 5]
+      roles: [1, 6]
     },
     {
       path: `/${user?.rol_nombre}/usuarios`,
       label: "Gestión de Usuarios y Roles",
       icon: Users,
-      roles: [1, 4, 5]
+      roles: [1, 4, 6]
     },
     {
       path: `/${user?.rol_nombre}/auditoria`,
       label: "Auditoría de Registros",
       icon: FileText,
-      roles: [1, 4, 5]
+      roles: [1, 4, 6]
     },
     {
       path: `/${user?.rol_nombre}/perfil`,
       label: "Perfil de Usuario",
       icon: User,
-      roles: [1, 2, 3, 4, 5]
+      roles: [1, 2, 3, 4, 6]
     }
   ];
 
