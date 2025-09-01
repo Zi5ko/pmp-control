@@ -1,27 +1,55 @@
+//frontend/src/roles/administrador/Inicio.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { ClipboardList, CheckCircle, Clock } from "lucide-react";
 import KpiCard from "../../components/KpiCard.jsx";
 import MiniCalendar from "../../components/MiniCalendar.jsx";
+import { obtenerLogs }   from "../../services/logsService.js";
 
+axios.defaults.withCredentials = true; // Asegura que se envíen cookies
 
 export default function InicioAdmin() {
   const [resumen, setResumen] = useState({ total: 0, completadas: 0, pendientes: 0 });
+  const [logs, setLogs] = useState([]);
+  const [cumplimiento, setCumplimiento] = useState({ critico: { total: 0, firmadas: 0 }, relevante: { total: 0, firmadas: 0 } });
   const [error, setError] = useState("");
 
   useEffect(() => {
     document.title = "Inicio - Administrador";
+
     const fetchResumen = async () => {
       try {
-        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/resumen`);
+        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/resumen`, { withCredentials: true });
         setResumen(data);
       } catch (err) {
         console.error("❌ Error al obtener KPIs:", err);
         setError("No se pudo cargar el resumen.");
       }
     };
+
+    const fetchLogs = async () => {
+      try {
+        const data = await obtenerLogs();
+        setLogs(data.slice(0, 5)); // Limita a los 5 más recientes
+      } catch (err) {
+        console.error("❌ Error al obtener logs:", err);
+      }
+    };
+
+
+    const fetchCumplimiento = async () => {
+      try {
+        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/cumplimiento-criticidad`);
+        setCumplimiento(data);
+      } catch (err) {
+        console.error("❌ Error al obtener cumplimiento:", err);
+      }
+    };
+
     fetchResumen();
+    fetchLogs();
+    fetchCumplimiento();
   }, []);
 
   const dataChart = [
@@ -31,15 +59,18 @@ export default function InicioAdmin() {
 
   const colores = ["#34D399", "#FBBF24"];
 
+  const porcentaje = (parte, total) => total === 0 ? 0 : Math.round((parte / total) * 100);
+  const { critico, relevante } = cumplimiento;
+
   return (
     <div className="p-6 text-[#111A3A] grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6">
-      {/* Columna principal (contenido del dashboard) */}
+      {/* Columna principal */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-  
+
         {error && <p className="text-red-500 mb-4">{error}</p>}
-  
-        {/* Sección KPIs */}
+
+        {/* KPIs */}
         <section>
           <h2 className="text-xl font-semibold mb-4">KPIs</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
@@ -48,8 +79,8 @@ export default function InicioAdmin() {
             <KpiCard value={resumen.pendientes} label="Pendientes" Icon={Clock} color="#FBBF24" />
           </div>
         </section>
-  
-        {/* Sección de gráfico + acciones */}
+
+        {/* Resumen Visual y Acciones Recientes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-4">Resumen Visual</h2>
@@ -59,37 +90,74 @@ export default function InicioAdmin() {
                   data={dataChart}
                   dataKey="value"
                   nameKey="name"
+                  cx="50%"
+                  cy="50%"
                   outerRadius={80}
-                  innerRadius={40}
-                  label
+                  innerRadius={50}
+                  labelLine={false}
+                  label={({ name }) => `${name}`}
                 >
-                  {dataChart.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={colores[index % colores.length]} />
+                  {dataChart.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={index === 0 ? "#10B981" : "#DC2626"} // verde y ámbar
+                    />
                   ))}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
           </div>
-  
-          <div className="bg-white p-6 rounded-lg shadow">
+
+          <div className="bg-white p-6 rounded-lg shadow h-full">
             <h2 className="text-lg font-semibold mb-4">Acciones recientes</h2>
-            <ul className="text-gray-600 list-disc pl-5 text-sm space-y-1">
-              <li>Usuario técnico agregado</li>
-              <li>Equipo Atlan XL ingresado</li>
-              <li>Orden de mantenimiento programada</li>
-            </ul>
+            {logs.length === 0 ? (
+              <p className="text-sm text-gray-400">No hay registros recientes.</p>
+            ) : (
+              <ul className="text-sm text-gray-700 space-y-2">
+                {logs.slice(0, 5).map((log) => {
+                  const fechaFormateada = new Date(log.fecha).toLocaleDateString("es-CL", {
+                    year: "2-digit",
+                    month: "2-digit",
+                    day: "2-digit",
+                  });
+
+                  return (
+                    <li key={log.id}>
+                      <span className="text-[#111A3A] font-semibold">{fechaFormateada}</span> –{" "}
+                      {log.usuario || "Usuario desconocido"} <span className="italic">{log.accion}</span> en{" "}
+                      <span className="font-medium">{log.tabla_afectada}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
-  
-        {/* Placeholder para cumplimiento por sección */}
+
+        {/* Cumplimiento por sección */}
         <section>
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-4">Cumplimiento por Sección</h2>
-            <p className="text-gray-500 text-sm">Pronto se mostrará el cumplimiento por criticidad.</p>
+
+            <div className="mb-4">
+              <p className="text-sm font-medium text-[#111A3A]">Equipos Críticos</p>
+              <div className="w-full bg-gray-200 rounded h-3 mt-1">
+                <div className="bg-green-500 h-3 rounded" style={{ width: `${porcentaje(critico.firmadas, critico.total)}%` }}></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{critico.firmadas} de {critico.total} firmadas</p>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-[#111A3A]">Equipos Relevantes</p>
+              <div className="w-full bg-gray-200 rounded h-3 mt-1">
+                <div className="bg-blue-500 h-3 rounded" style={{ width: `${porcentaje(relevante.firmadas, relevante.total)}%` }}></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{relevante.firmadas} de {relevante.total} firmadas</p>
+            </div>
           </div>
         </section>
       </div>
-  
+
       {/* Columna lateral: calendario */}
       <aside className="block">
         <MiniCalendar />

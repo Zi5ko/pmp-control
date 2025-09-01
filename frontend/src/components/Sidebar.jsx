@@ -24,6 +24,7 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+
   const rolId = Number(user?.rol_id); // 1=admin, 2=técnico, 3=supervisor, 4=responsable institucional, 6=esmp
 
   const [openSubmenus, setOpenSubmenus] = useState({});

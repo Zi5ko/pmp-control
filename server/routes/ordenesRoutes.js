@@ -23,7 +23,8 @@ const {
   obtenerReporteFirmado,
   obtenerOrdenesValidadas,
   generarPDF,
-  obtenerEventosCalendario
+  obtenerEventosCalendario,
+  obtenerCumplimientoPorCriticidad
 } = require('../controllers/ordenesController');
 
 // Rutas principales
@@ -40,16 +41,22 @@ router.get("/resumen", async (req, res) => {
     const result = await db.query(`
       SELECT
         COUNT(*) AS total,
-        COUNT(*) FILTER (WHERE estado = 'realizada') AS completadas,
-        COUNT(*) FILTER (WHERE estado = 'pendiente') AS pendientes
-      FROM ordenes_trabajo
+        COUNT(*) FILTER (WHERE estado IN ('firmada')) AS completadas,
+        COUNT(*) FILTER (WHERE estado IN ('realizada', 'pendiente', 'asignada', 'validada')) AS pendientes
+      FROM ordenes_trabajo;
     `);
-    res.json(result.rows[0]);
+
+    res.json({
+      total: parseInt(result.rows[0].total),
+      completadas: parseInt(result.rows[0].completadas),
+      pendientes: parseInt(result.rows[0].pendientes),
+    });
   } catch (err) {
     console.error("❌ Error al obtener resumen de ordenes:", err);
     res.status(500).json({ error: "Error al obtener resumen" });
   }
 });
+router.get('/cumplimiento-criticidad', obtenerCumplimientoPorCriticidad);
 
 // Rutas para validación y ejecución de órdenes
 router.get("/ejecutadas/no-validadas", verifyToken, listarOrdenesParaValidacion);

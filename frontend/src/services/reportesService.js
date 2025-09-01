@@ -10,9 +10,7 @@ export const getOrdenesValidadas = async () => {
 
 // Generar reporte PDF con firmas (usa interceptor)
 export const generarPDF = async (id, payload) => {
-  const response = await api.post(`/ordenes/${id}/generar-reporte`, payload, {
-    responseType: "blob", // ¡solo esto es necesario!
-  });
+  const response = await api.post(`/ordenes/${id}/generar-reporte`, payload);
   return response.data;
 };
 
@@ -21,7 +19,7 @@ export const descargarReportePDF = async (nombreArchivo) => {
   const token = localStorage.getItem("token");
 
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/reportes/descargar/${nombreArchivo}`,
+    `${import.meta.env.VITE_BACKEND_URL}/reportes/descargar/${nombreArchivo}`,
     {
       method: "GET",
       headers: {
@@ -43,4 +41,10 @@ export const descargarReportePDF = async (nombreArchivo) => {
   link.click();
 
   window.URL.revokeObjectURL(url);
+};
+
+// Obtener URL del reporte firmado más reciente para una orden
+export const obtenerReporteFirmado = async (ordenId) => {
+  const response = await api.get(`/ordenes/${ordenId}/reporte-firmado`);
+  return response.data; // { url: 'uploads/reportes/reporte_4_...pdf' }
 };

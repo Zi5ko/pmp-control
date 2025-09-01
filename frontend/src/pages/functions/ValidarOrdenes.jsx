@@ -1,10 +1,19 @@
-//src/components/pages/functions/ValidarOrdenes.jsx
+//frontend/src/pages/functions/ValidarOrdenes.jsx
 import { useEffect, useState } from "react";
+import { Search } from "lucide-react";
+import SuccessBanner from "../../components/SuccesBanner";
+import ErrorBanner from "../../components/ErrorBanner";
+import MiniCalendar from "../../components/MiniCalendar";
 import { getOrdenesEjecutadas, validarOrden } from "../../services/ordenesServices";
 
-export default function OrdenesRealizadas() {
+const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
+
+export default function ValidarOrdenes() {
   const [ordenes, setOrdenes] = useState([]);
-  const [comentarios, setComentarios] = useState({});
+  const [seleccionados, setSeleccionados] = useState([]);
+  const [comentario, setComentario] = useState("");
+  const [busqueda, setBusqueda] = useState("");
+  const [mensaje, setMensaje] = useState(null);
 
   const fetchOrdenes = async () => {
     try {
@@ -12,22 +21,7 @@ export default function OrdenesRealizadas() {
       setOrdenes(data);
     } catch (error) {
       console.error("Error al cargar órdenes ejecutadas:", error);
-    }
-  };
-
-  const handleComentarioChange = (id, value) => {
-    setComentarios((prev) => ({ ...prev, [id]: value }));
-  };
-
-  const handleValidar = async (id, validada) => {
-    try {
-      await validarOrden(id, {
-        validada,
-        comentario: comentarios[id] || "",
-      });
-      fetchOrdenes(); // recargar
-    } catch (error) {
-      console.error("Error al validar orden:", error);
+      setMensaje({ tipo: "error", texto: "Error al cargar órdenes." });
     }
   };
 
@@ -35,47 +29,174 @@ export default function OrdenesRealizadas() {
     fetchOrdenes();
   }, []);
 
+  const toggleSeleccion = (id) => {
+    setSeleccionados((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
+
+  const seleccionarTodos = () => {
+    const filtradas = ordenesFiltradas;
+    if (seleccionados.length === filtradas.length) {
+      setSeleccionados([]);
+    } else {
+      setSeleccionados(filtradas.map((o) => o.id));
+    }
+  };
+
+  const handleAccion = async (validada) => {
+    if (seleccionados.length === 0) {
+      setMensaje({ tipo: "error", texto: "Selecciona al menos una orden." });
+      return;
+    }
+
+    try {
+      await Promise.all(
+        seleccionados.map((id) =>
+          validarOrden(id, { validada, comentario })
+        )
+      );
+      setMensaje({
+        tipo: "success",
+        texto: validada ? "Órdenes validadas." : "Órdenes rechazadas.",
+      });
+      setComentario("");
+      setSeleccionados([]);
+      fetchOrdenes();
+    } catch (error) {
+      console.error("Error al validar órdenes:", error);
+      setMensaje({ tipo: "error", texto: "Error al validar órdenes." });
+    }
+  };
+
+  const ordenesFiltradas = ordenes.filter((o) =>
+    o.equipo_nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold text-[#111A3A] mb-4">Validación de Mantenimientos</h1>
-
-      {ordenes.length === 0 ? (
-        <p className="text-gray-500 text-sm">No hay órdenes pendientes de validación.</p>
-      ) : (
-        <div className="grid gap-4">
-          {ordenes.map((orden) => (
-            <div key={orden.id} className="bg-white p-4 rounded-lg shadow border">
-              <p><strong>Equipo:</strong> {orden.equipo_nombre}</p>
-              <p><strong>Ubicación:</strong> {orden.ubicacion}</p>
-              <p><strong>Técnico:</strong> {orden.tecnico_nombre || "No asignado"}</p>
-              <p><strong>Fecha ejecución:</strong> {new Date(orden.fecha_ejecucion).toLocaleDateString()}</p>
-              <p><strong>Evidencias:</strong> {orden.total_evidencias} archivo(s)</p>
-
-              <textarea
-                className="w-full mt-2 p-2 border rounded text-sm"
-                placeholder="Comentario del supervisor"
-                value={comentarios[orden.id] || ""}
-                onChange={(e) => handleComentarioChange(orden.id, e.target.value)}
-              />
-
-              <div className="mt-2 flex gap-2">
-                <button
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-                  onClick={() => handleValidar(orden.id, true)}
-                >
-                  Validar
-                </button>
-                <button
-                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                  onClick={() => handleValidar(orden.id, false)}
-                >
-                  Rechazar
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="p-6">
+      {mensaje?.tipo === "success" && (
+        <SuccessBanner
+          title="Éxito"
+          message={mensaje.texto}
+          onClose={() => setMensaje(null)}
+        />
       )}
+      {mensaje?.tipo === "error" && (
+        <ErrorBanner
+          title="Error"
+          message={mensaje.texto}
+          onClose={() => setMensaje(null)}
+        />
+      )}
+
+      <h1 className="text-2xl font mb-4">Validación de Mantenimientos</h1>
+
+      <div className="flex justify-between items-center mb-4">
+        <div className="relative w-full max-w-sm">
+          <Search
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar equipo"
+            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D0FF34]"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between gap-6">
+        {/* Tabla de órdenes */}
+        <div className="flex-1 overflow-x-auto bg-white shadow rounded-xl">
+          <table className="min-w-full">
+            <thead className="bg-gray-50">
+              <tr className="text-left text-sm text-gray-600">
+                <th className="p-3">
+                  <input
+                    type="checkbox"
+                    checked={seleccionados.length === ordenesFiltradas.length}
+                    onChange={seleccionarTodos}
+                  />
+                </th>
+                <th className="p-3">ID</th>
+                <th className="p-3">Equipo</th>
+                <th className="p-3">Ubicación</th>
+                <th className="p-3">Técnico</th>
+                <th className="p-3">Ejecución</th>
+                <th className="p-3">Evidencias</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ordenesFiltradas.map((orden) => (
+                <tr key={orden.id} className="border-t">
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      checked={seleccionados.includes(orden.id)}
+                      onChange={() => toggleSeleccion(orden.id)}
+                    />
+                  </td>
+                  <td className="p-3 text-sm text-gray-800">
+                    {formatearID(orden.id)}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">
+                    {orden.equipo_nombre}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">
+                    {orden.ubicacion}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">
+                    {orden.tecnico_nombre || "-"}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">
+                    {new Date(orden.fecha_ejecucion).toLocaleDateString("es-CL")}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">
+                    {orden.total_evidencias} archivo(s)
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Calendario a la derecha */}
+        <div className="w-full md:w-1/3 lg:w-1/4 mt-4 md:mt-0">
+          <MiniCalendar />
+        </div>
+      </div>
+
+      <h2 className="mt-8 text-lg font-medium text-gray-700">
+        Comentario del supervisor
+      </h2>
+
+      <div className="mt-2 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
+        <textarea
+          className="w-full p-3 border border-gray-300 rounded text-sm resize-none"
+          rows={3}
+          placeholder="Comentario general para la validación o rechazo de mantenimientos seleccionados"
+          value={comentario}
+          onChange={(e) => setComentario(e.target.value)}
+        />
+
+        <div className="mt-4 flex justify-center gap-4">
+          <button
+            onClick={() => handleAccion(true)}
+            className="bg-[#D0FF34] text-[#111A3A] font-semibold text-sm px-6 py-2 rounded shadow hover:bg-lime-300"
+          >
+            Validar órden(es)
+          </button>
+          <button
+            onClick={() => handleAccion(false)}
+            className="bg-red-600 text-white text-sm font-semibold px-6 py-2 rounded shadow hover:bg-red-700"
+          >
+            Rechazar órden(es)
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
