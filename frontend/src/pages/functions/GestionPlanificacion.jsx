@@ -21,6 +21,7 @@ export default function GestionPlanificacion() {
   useEffect(() => {
     const rolId = Number(user?.rol_id);
     if (!user || ![1, 5, 6].includes(rolId)) {
+
       navigate("/no-autorizado");
     }
   }, [navigate, user]);

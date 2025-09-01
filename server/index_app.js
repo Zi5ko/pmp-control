@@ -56,6 +56,10 @@ app.use('/api', require('./routes/healthRoutes'));
 
 // Middleware para servir archivos estáticos de la carpeta "uploads"
 const { authUploads } = require('./middlewares/auth');
+// Permite acceso público a los reportes
+app.use('/uploads/reportes', express.static(path.join(__dirname, 'uploads', 'reportes')));
+app.use('/uploads/evidencias', express.static(path.join(__dirname, 'uploads', 'evidencias')));
+// Mantén autenticado el acceso a otras evidencias si lo necesitas
 app.use('/uploads', authUploads, express.static(path.join(__dirname, 'uploads')));
 
 // Rutas para manejar firmas

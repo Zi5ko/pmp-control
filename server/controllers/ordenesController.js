@@ -4,6 +4,7 @@ const fs = require('fs');
 const db = require('../db');
 const { endOfWeek } = require("date-fns");
 const generarReportePDF = require('../utils/generarReportes');
+const { v4: uuidv4 } = require("uuid");
 
 const {
   getOrdenes,
@@ -310,6 +311,7 @@ async function asignarResponsableOrden(req, res) {
     const { responsable_id } = req.body;
 
     if (![1, 5, 6].includes(usuario.rol_id)) {
+
       return res.status(403).json({ error: "No autorizado para asignar técnicos" });
     }
 
@@ -400,10 +402,10 @@ async function obtenerOrdenesValidadas(req, res) {
   try {
     const result = await db.query(
       `SELECT ot.*, eq.nombre AS equipo_nombre, eq.ubicacion
-       FROM ordenes_trabajo ot
-       JOIN equipos eq ON ot.equipo_id = eq.id
-       WHERE ot.estado = 'validada'
-       ORDER BY ot.fecha_ejecucion DESC`
+      FROM ordenes_trabajo ot
+      JOIN equipos eq ON ot.equipo_id = eq.id
+      WHERE ot.estado = 'validada'
+      ORDER BY ot.fecha_ejecucion DESC`
     );
     res.json(result.rows);
   } catch (error) {
@@ -413,52 +415,71 @@ async function obtenerOrdenesValidadas(req, res) {
 }
 
 // 18. Generar reporte PDF con firmas
-async function generarPDF(req, res) {
+const generarPDF = async (req, res) => {
   try {
-    const { id } = req.params;
     const { firmaTecnico, firmaServicio } = req.body;
+    const ordenId = req.params.id;
 
-    const orden = await getOrdenDetallada(id);
-    if (!orden) return res.status(404).json({ error: 'Orden no encontrada' });
+    // Obtener la orden con todos los datos
+    const ordenQuery = await db.query(`
+      SELECT ot.*, eq.nombre AS equipo_nombre, eq.ubicacion, u.nombre AS tecnico_nombre
+      FROM ordenes_trabajo ot
+      JOIN equipos eq ON ot.equipo_id = eq.id
+      LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)
+      WHERE ot.id = $1
+    `, [ordenId]);
 
-    if (!firmaTecnico || !firmaServicio) {
-      return res.status(400).json({ error: 'Firmas incompletas' });
+    if (ordenQuery.rowCount === 0) {
+      return res.status(404).json({ error: "Orden no encontrada." });
     }
 
-    // Generar rutas para archivos temporales
-    const firmaTecnicoPath = path.join(__dirname, `../uploads/firmas/firma_tecnico_${orden.responsable}.png`);
-    const firmaServicioPath = path.join(__dirname, `../uploads/firmas_servicio/firma_servicio_${id}.png`);
+    const orden = ordenQuery.rows[0];
 
-    // Asegurar directorios
-    fs.mkdirSync(path.dirname(firmaTecnicoPath), { recursive: true });
-    fs.mkdirSync(path.dirname(firmaServicioPath), { recursive: true });
+    // Validación previa (puedes extender esto si lo deseas)
+    if (!firmaTecnico || !firmaServicio) {
+      return res.status(400).json({ error: "Faltan una o ambas firmas." });
+    }
 
-    // Guardar archivos temporales
-    fs.writeFileSync(firmaTecnicoPath, Buffer.from(firmaTecnico, 'base64'));
-    fs.writeFileSync(firmaServicioPath, Buffer.from(firmaServicio, 'base64'));
+    // Guardar firmas temporales
+    const firmaTecnicoPath = path.join(__dirname, `../uploads/firmas/firmaTecnico_${uuidv4()}.png`);
+    const firmaServicioPath = path.join(__dirname, `../uploads/firmas/firmaServicio_${uuidv4()}.png`);
+
+    const firmaTBuffer = Buffer.from(firmaTecnico.replace(/^data:image\/\w+;base64,/, ""), "base64");
+    const firmaSBuffer = Buffer.from(firmaServicio.replace(/^data:image\/\w+;base64,/, ""), "base64");
+
+    fs.writeFileSync(firmaTecnicoPath, firmaTBuffer);
+    fs.writeFileSync(firmaServicioPath, firmaSBuffer);
 
     // Nombre del archivo PDF
-    const nombreArchivo = `reporte_orden_${id}_${Date.now()}.pdf`;
+    const nombreArchivo = `reporte_${orden.id}_${Date.now()}.pdf`;
 
     // Generar PDF
-    const rutaPDF = await generarReportePDF(
-      orden,
-      firmaTecnicoPath,
-      firmaServicioPath,
-      nombreArchivo
-    );
+    const url = await generarReportePDF(orden, firmaTecnicoPath, firmaServicioPath, nombreArchivo);
 
-    // ✅ Limpieza de archivos temporales
+    // Eliminar firmas temporales
     fs.unlinkSync(firmaTecnicoPath);
     fs.unlinkSync(firmaServicioPath);
 
-    res.json({ success: true, url: rutaPDF });
+    // 🔄 Cambiar estado de la orden a "firmada"
+    await db.query(
+      `UPDATE ordenes_trabajo SET estado = 'firmada' WHERE id = $1`,
+      [ordenId]
+    );
 
-  } catch (err) {
-    console.error('Error al generar reporte:', err);
-    res.status(500).json({ error: 'Error al generar reporte' });
+    // 📁 Guardar evidencia en la base de datos
+    await db.query(`
+      INSERT INTO evidencias (orden_id, url, tipo, subido_por)
+      VALUES ($1, $2, $3, $4)
+    `, [ordenId, `reportes/${nombreArchivo}`, 'reporte_firmado', orden.responsable]);
+
+    // ✅ Devolver URL del PDF
+    return res.json({ url });
+  } catch (error) {
+    console.error("Error al generar reporte:", error);
+    return res.status(500).json({ error: "Error al generar el reporte." });
   }
-}
+};
+
 
 // 19. Obtener todos los eventos (planificados y proyectados)
 async function obtenerEventosCalendario(req, res) {
@@ -546,6 +567,41 @@ async function obtenerEventosCalendario(req, res) {
   }
 }
 
+// 20. Obtener cumplimiento por criticidad (fecha de hoy hacia atrás)
+const obtenerCumplimientoPorCriticidad = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        LOWER(TRIM(e.criticidad)) AS criticidad,
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE o.estado = 'firmada') AS firmadas
+      FROM ordenes_trabajo o
+      JOIN equipos e ON o.equipo_id = e.id
+      WHERE o.fecha_programada <= CURRENT_DATE
+      GROUP BY criticidad
+    `);
+
+    const data = {
+      critico: { total: 0, firmadas: 0 },
+      relevante: { total: 0, firmadas: 0 }
+    };
+
+    for (const row of result.rows) {
+      const key = row.criticidad.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (data[key]) {
+        data[key].total = parseInt(row.total);
+        data[key].firmadas = parseInt(row.firmadas);
+      }
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error("❌ Error al obtener cumplimiento por criticidad:", err);
+    res.status(500).json({ error: "Error al obtener cumplimiento por criticidad" });
+  }
+};
+
+
 module.exports = {
   listarOrdenes,
   obtenerOrden,
@@ -564,5 +620,6 @@ module.exports = {
   obtenerReporteFirmado,
   obtenerOrdenesValidadas,
   generarPDF,
-  obtenerEventosCalendario
+  obtenerEventosCalendario,
+  obtenerCumplimientoPorCriticidad
 };

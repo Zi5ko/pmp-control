@@ -122,7 +122,7 @@ async function obtenerHistorialOrdenes(usuario_id, rol_id) {
     JOIN equipos e ON ot.equipo_id = e.id
     LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)
     LEFT JOIN evidencias ev ON ot.id = ev.orden_id
-    WHERE ot.estado IN ('realizada', 'validada')
+    WHERE ot.estado IN ('firmada', 'validada')
   `;
 
   const params = [];
