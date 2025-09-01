@@ -34,7 +34,7 @@ export function getUsuario() {
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return { id: payload.sub, email: payload.email, rol_id: payload.rol_id };
+    return { id: payload.sub, email: payload.email, rol_id: Number(payload.rol_id) };
   } catch {
     return null;
   }
