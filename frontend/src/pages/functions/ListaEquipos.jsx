@@ -19,7 +19,8 @@ export default function ListaEquipos() {
     texto?.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() || "";
 
   useEffect(() => {
-    if (!user || ![1, 5].includes(user.rol_id)) {
+    const rolId = Number(user?.rol_id);
+    if (!user || ![1, 6].includes(rolId)) {
       navigate("/no-autorizado");
     }
   }, [navigate, user]);

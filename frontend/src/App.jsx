@@ -116,7 +116,7 @@ function App() {
         <Route
           path="/responsable"
           element={
-            <ProtectedRoute allowedRoles={[4]}>
+            <ProtectedRoute allowedRoles={[5]}>
               <LayoutBase />
             </ProtectedRoute>
           }
@@ -135,7 +135,7 @@ function App() {
         <Route
           path="/esmp"
           element={
-            <ProtectedRoute allowedRoles={[5]}>
+            <ProtectedRoute allowedRoles={[6]}>
               <LayoutBase />
             </ProtectedRoute>
           }
