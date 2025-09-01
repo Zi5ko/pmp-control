@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import ModalEjecutarOrden from "../../components/ordenes/ModalEjecutarOrden";
 import { getOrdenesPendientes } from "../../services/ordenesServices";
 import { Search } from "lucide-react";
+import MiniCalendar from "../../components/MiniCalendar";
 
 export default function Reportes() {
   const [ordenes, setOrdenes] = useState([]);
@@ -46,6 +47,7 @@ export default function Reportes() {
       {ordenesFiltradas.length === 0 ? (
         <p className="text-sm text-gray-500">No hay órdenes pendientes por ejecutar.</p>
       ) : (
+        <div className="flex flex-col md:flex-row justify-between gap-6">
         <div className="overflow-x-auto bg-white shadow rounded-xl">
           <table className="min-w-full">
             <thead className="bg-gray-50">
@@ -73,15 +75,22 @@ export default function Reportes() {
                   <td className="p-3 text-center">
                   <button
                     onClick={() => setOrdenSeleccionada(orden)}
-                    className="mt-2 px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="bg-[#D0FF34] text-[#111A3A] px-6 py-1 rounded shadow hover:bg-lime-300"
                   >
-                    Ejecutar orden
+                    <th className="text-sm">Ejecutar Orden</th>
                   </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
+          {/* Calendario a la derecha */}
+          <div className="w-full md:w-1/3 lg:w-1/4 mt-4 md:mt-0">
+            <div>
+              <MiniCalendar />
+            </div>
+          </div>
         </div>
       )}
 

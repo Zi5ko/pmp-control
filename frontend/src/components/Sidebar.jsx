@@ -1,6 +1,7 @@
 // frontend/src/components/Sidebar.jsx
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getRutaPorRol } from "../utils/rutasPorRol";
 import {
   LogOut,
   LayoutDashboard,
@@ -20,11 +21,20 @@ import {
 
 import logo from "../assets/hosdip logo_Logo Original Blanco.png";
 
+// Función para normalizar el nombre del rol (quita tildes, pasa a minúsculas)
+const normalizarRol = (rutaBase) => {
+  return rutaBase
+    .normalize("NFD")               // Descompone caracteres acentuados
+    .replace(/[\u0300-\u036f]/g, "") // Elimina tildes
+    .toLowerCase();                // Convierte a minúsculas
+};
+
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  const rolId = user?.rol_id; // 1=admin, 2=técnico, 3=supervisor, 4=responsable institucional, 5=esmp
+  const rolId = user?.rol_id;
+  const rutaBase = Base = getRutaPorRol(user?.rol_nombre);
 
   const [openSubmenus, setOpenSubmenus] = useState({});
 
@@ -39,7 +49,7 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      path: `/${user?.rol_nombre}`,
+      path: `/${rutaBase}`,
       label: "Dashboard",
       icon: LayoutDashboard,
       roles: [1, 2, 3, 4, 5],
@@ -49,12 +59,12 @@ export default function Sidebar() {
       icon: MonitorDot,
       roles: [1, 5],
       children: [
-        { path: `/${user?.rol_nombre}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 5] },
-        { path: `/${user?.rol_nombre}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 5] },
+        { path: `/${rutaBase}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 5] },
+        { path: `/${rutaBase}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 5] },
       ]
     },
     {
-      path: `/${user?.rol_nombre}/planificacion`,
+      path: `/${rutaBase}/planificacion`,
       label: "Planificación de Mantenimientos",
       icon: Calendar,
       roles: [1, 4, 5]
@@ -64,33 +74,33 @@ export default function Sidebar() {
       icon: Wrench,
       roles: [1, 2, 3, 4, 5],
       children: [
-        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 5] },
-        { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 4] },
-        { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 4] },
-        { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
-        { path: `/${user?.rol_nombre}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
+        { path: `/${rutaBase}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 4, 5] },
+        { path: `/${rutaBase}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 2, 4] },
+        { path: `/${rutaBase}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 4] },
+        { path: `/${rutaBase}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
+        { path: `/${rutaBase}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
       ]
     },
     {
-      path: `/${user?.rol_nombre}/alertas`,
+      path: `/${rutaBase}/alertas`,
       label: "Alertas Automáticas",
       icon: Settings,
       roles: [1, 5]
     },
     {
-      path: `/${user?.rol_nombre}/usuarios`,
+      path: `/${rutaBase}/usuarios`,
       label: "Gestión de Usuarios y Roles",
       icon: Users,
       roles: [1, 4, 5]
     },
     {
-      path: `/${user?.rol_nombre}/auditoria`,
+      path: `/${rutaBase}/auditoria`,
       label: "Auditoría de Registros",
       icon: FileText,
       roles: [1, 4, 5]
     },
     {
-      path: `/${user?.rol_nombre}/perfil`,
+      path: `/${rutaBase}/perfil`,
       label: "Perfil de Usuario",
       icon: User,
       roles: [1, 2, 3, 4, 5]
@@ -158,7 +168,7 @@ export default function Sidebar() {
                   }`}
                 >
                   <item.icon size={18} />
-                  <span className="text-sm ">{item.label}</span>
+                  <span className="text-sm">{item.label}</span>
                 </Link>
               </li>
             );
