@@ -12,7 +12,7 @@ function getRutaPorRol(rol_nombre) {
     administrador: "/administrador",
     técnico: "/tecnico",
     supervisor: "/supervisor",
-    responsable_institucional: "/responsable",
+    responsable_institucional: "/responsable-institucional",
     esmp: "/esmp"
   };
   return rutas[rol_nombre] || "/login";

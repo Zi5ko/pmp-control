@@ -25,6 +25,7 @@ export default function Sidebar() {
   const user = JSON.parse(localStorage.getItem("user"));
   const rolId = Number(user?.rol_id); // 1=admin, 2=técnico, 3=supervisor, 5=responsable institucional, 6=esmp
 
+
   const [openSubmenus, setOpenSubmenus] = useState({});
 
   const toggleSubmenu = (label) => {
@@ -42,6 +43,7 @@ export default function Sidebar() {
       label: "Dashboard",
       icon: LayoutDashboard,
       roles: [1, 2, 3, 5, 6],
+
     },
     {
       label: "Gestión de Equipos",
@@ -57,6 +59,7 @@ export default function Sidebar() {
       label: "Planificación de Mantenimientos",
       icon: Calendar,
       roles: [1, 5, 6]
+
     },
     {
       label: "Mantenimiento",
@@ -81,6 +84,7 @@ export default function Sidebar() {
       label: "Gestión de Usuarios y Roles",
       icon: Users,
       roles: [1, 5, 6]
+
     },
     {
       path: `/${user?.rol_nombre}/auditoria`,
