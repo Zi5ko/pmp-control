@@ -11,10 +11,10 @@ const {
   eliminarUsuario,
 } = require('../controllers/usuariosController');
 
-router.get('/usuarios', verifyToken, listarUsuarios);
-router.post('/usuarios', verifyToken, crearUsuario);
-router.put('/usuarios/:id', verifyToken, actualizarUsuario);
-router.delete('/usuarios/:id', verifyToken, eliminarUsuario);
+router.get('/', verifyToken, listarUsuarios);
+router.post('/', verifyToken, crearUsuario);
+router.put('/:id', verifyToken, actualizarUsuario);
+router.delete('/:id', verifyToken, eliminarUsuario);
 
 router.get('/tecnicos', verifyToken, obtenerTecnicos);
 
