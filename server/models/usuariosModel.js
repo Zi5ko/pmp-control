@@ -20,16 +20,32 @@ async function crearUsuario({ nombre, email, password_hash, rol_id }) {
   return result.rows[0];
 }
 
+// Listar usuarios
+async function getUsuarios() {
+  const result = await pool.query('SELECT * FROM usuarios');
+  return result.rows;
+}
+
+// Actualizar usuario
+async function actualizarUsuario(id, { nombre, email, rol_id }) {
+  const result = await pool.query(
+    `UPDATE usuarios SET nombre = $1, email = $2, rol_id = $3
+     WHERE id = $4 RETURNING *`,
+    [nombre, email, rol_id, id]
+  );
+  return result.rows[0];
+}
+
+// Eliminar usuario
+async function eliminarUsuario(id) {
+  await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
+}
+
 module.exports = {
   getUsuarioByEmail,
   crearUsuario,
-  getUsuarios
+  getUsuarios,
+  actualizarUsuario,
+  eliminarUsuario,
 };
 
-async function getUsuarios() {
-    const result = await pool.query('SELECT * FROM usuarios');
-    return result.rows;
-  }
-  
-
-  
