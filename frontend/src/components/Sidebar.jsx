@@ -67,7 +67,7 @@ export default function Sidebar() {
       roles: [1, 2, 3, 5, 6],
       children: [
         { path: `${basePath}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 5, 6] },
-        { path: `${basePath}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 5] },
+        { path: `${basePath}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 2, 5] },
         { path: `${basePath}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 5] },
         { path: `${basePath}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
         { path: `${basePath}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
@@ -77,7 +77,7 @@ export default function Sidebar() {
       path: `${basePath}/alertas`,
       label: "Alertas Automáticas",
       icon: Settings,
-      roles: [1, 6]
+      roles: [1, 2, 3, 5, 6]
     },
     {
       path: `${basePath}/usuarios`,
