@@ -7,6 +7,7 @@ import CalendarContainer from "../../components/calendar/CalendarContainer";
 import FloatingBanner from "../../components/FloatingBanner";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
+import { getRutaPorRol } from "../../utils/rutasPorRol";
 
 export default function Planificacion() {
   const [eventosTotales, setEventosTotales] = useState([]);
@@ -28,6 +29,7 @@ export default function Planificacion() {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
+  const basePath = getRutaPorRol(user?.rol_nombre);
 
   // 👉 Cargar eventos
   const fetchEventos = async () => {
@@ -177,7 +179,7 @@ export default function Planificacion() {
 
               {/* Botón de gestión */}
               <button
-                onClick={() => navigate(`/${user?.rol_nombre}/gestion`)}
+                onClick={() => navigate(`${basePath}/gestion`)}
                 className="mt-4 w-full text-xs bg-white text-[#5C7BA1] py-1.5 rounded hover:bg-gray-100 font-semibold"
               >
                 Ir a gestión de planificación

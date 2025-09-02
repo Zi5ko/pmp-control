@@ -18,12 +18,14 @@ import {
 } from "lucide-react";
 
 import logo from "../assets/hosdip logo_Logo Original Blanco.png";
+import { getRutaPorRol } from "../utils/rutasPorRol";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const rolId = Number(user?.rol_id); // 1=admin, 2=técnico, 3=supervisor, 5=responsable institucional, 6=esmp
+  const basePath = getRutaPorRol(user?.rol_nombre);
 
 
   const [openSubmenus, setOpenSubmenus] = useState({});
@@ -39,55 +41,52 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      path: `/${user?.rol_nombre}`,
+      path: basePath,
       label: "Dashboard",
       icon: LayoutDashboard,
       roles: [1, 2, 3, 5, 6],
-
     },
     {
       label: "Gestión de Equipos",
       icon: MonitorDot,
       roles: [1, 6],
       children: [
-        { path: `/${user?.rol_nombre}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 6] },
-        { path: `/${user?.rol_nombre}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 6] },
+        { path: `${basePath}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 6] },
+        { path: `${basePath}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 6] },
       ]
     },
     {
-      path: `/${user?.rol_nombre}/planificacion`,
+      path: `${basePath}/planificacion`,
       label: "Planificación de Mantenimientos",
       icon: Calendar,
       roles: [1, 5, 6]
-
     },
     {
       label: "Mantenimiento",
       icon: Wrench,
       roles: [1, 2, 3, 5, 6],
       children: [
-        { path: `/${user?.rol_nombre}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 5, 6] },
-        { path: `/${user?.rol_nombre}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 5] },
-        { path: `/${user?.rol_nombre}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 5] },
-        { path: `/${user?.rol_nombre}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
-        { path: `/${user?.rol_nombre}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
+        { path: `${basePath}/asignar-ordenes`, label: "Asignar Órdenes", icon: UserCheck, roles: [1, 3, 5, 6] },
+        { path: `${basePath}/reportes`, label: "Ejecutar Mantenimiento", icon: ClipboardList, roles: [1, 5] },
+        { path: `${basePath}/validacion`, label: "Validar Mantenimientos", icon: ClipboardList, roles: [1, 3, 5] },
+        { path: `${basePath}/registros-firmas`, label: "Registros y Firmas", icon: FileText, roles: [1, 2] },
+        { path: `${basePath}/historial`, label: "Historial Técnico", icon: ClockIcon, roles: [1, 2] },
       ]
     },
     {
-      path: `/${user?.rol_nombre}/alertas`,
+      path: `${basePath}/alertas`,
       label: "Alertas Automáticas",
       icon: Settings,
-      roles: [1, 3, 6]
+      roles: [1, 6]
     },
     {
-      path: `/${user?.rol_nombre}/usuarios`,
+      path: `${basePath}/usuarios`,
       label: "Gestión de Usuarios y Roles",
       icon: Users,
       roles: [1, 5, 6]
-
     },
     {
-      path: `/${user?.rol_nombre}/auditoria`,
+      path: `${basePath}/auditoria`,
       label: "Auditoría de Registros",
       icon: FileText,
       roles: [1, 5, 6]

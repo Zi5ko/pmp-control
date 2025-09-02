@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import axios from "axios";
 import ErrorBanner from "../../components/ErrorBanner";
+import { getRutaPorRol } from "../../utils/rutasPorRol";
 
 export default function ListaEquipos() {
   const [equipos, setEquipos] = useState([]);
@@ -14,6 +15,7 @@ export default function ListaEquipos() {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const basePath = getRutaPorRol(user?.rol_nombre);
 
   const normalizar = (texto) =>
     texto?.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() || "";
@@ -189,7 +191,7 @@ export default function ListaEquipos() {
         {/* Botón a la derecha */}
         <div className="ml-auto">
           <button
-            onClick={() => navigate(`/${user?.rol_nombre}/equipos`)}
+            onClick={() => navigate(`${basePath}/equipos`)}
             className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:opacity-90"
           >
             Ingresar equipo

@@ -4,7 +4,6 @@ exports.getLogs = async (req, res) => {
   try {
     const rol_id = req.user.rol_id;
     if (![1, 5, 6].includes(rol_id)) {
-
       return res.status(403).json({ error: 'No autorizado para ver logs de auditoría' });
     }
 
