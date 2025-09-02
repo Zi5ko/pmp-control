@@ -130,6 +130,7 @@ export default function GestionPlanificacion() {
       setFechaReprogramacion("");
       setModoReprogramacion(false);
       setSearchParams({});
+
     } catch (err) {
       console.error("Error al reprogramar:", err);
       setMensaje({
@@ -149,6 +150,45 @@ export default function GestionPlanificacion() {
       )}
 
       <h1 className="text-2xl font mb-4">Planificación de Mantenimientos</h1>
+
+      {modoReprogramacion && (
+        <div className="mb-6 p-4 bg-white border border-gray-200 rounded-xl shadow">
+          <h2 className="text-lg font-medium text-gray-700 mb-2">
+            Reprogramar mantenimiento
+          </h2>
+          {ordenInfo && (
+            <div className="text-sm text-gray-700 mb-4">
+              <p>
+                <span className="font-medium">Equipo:</span> {ordenInfo.equipo_nombre}
+              </p>
+              <p>
+                <span className="font-medium">Ubicación:</span> {ordenInfo.ubicacion}
+              </p>
+              <p>
+                <span className="font-medium">ID:</span> {formatearID(equipoIdParam)}
+              </p>
+            </div>
+          )}
+
+          <p className="text-sm text-gray-600 mb-4">
+            Fecha original: {new Date(fechaAnterior).toLocaleDateString("es-CL")}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <input
+              type="date"
+              value={fechaReprogramacion}
+              onChange={(e) => setFechaReprogramacion(e.target.value)}
+              className="w-full sm:w-auto bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm"
+            />
+            <button
+              onClick={handleReprogramar}
+              className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
+            >
+              Guardar reprogramación
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center mb-4">
         <div className="relative w-full max-w-sm">
