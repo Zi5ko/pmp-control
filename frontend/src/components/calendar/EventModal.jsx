@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
+import { CircleX } from "lucide-react";
 
 
 export default function EventModal({ evento, onClose }) {

@@ -18,6 +18,9 @@ export default function InicioTecnico() {
   useEffect(() => {
     document.title = "Inicio - Técnico";
 
+    // Evita solicitudes no autorizadas mientras el usuario aún no está cargado
+    if (!user) return;
+
     const fetchPendientes = async () => {
       try {
         const data = await getOrdenesPendientes();
@@ -47,7 +50,7 @@ export default function InicioTecnico() {
     const fetchLogs = async () => {
       try {
         const data = await obtenerLogs();
-        const propios = user ? data.filter((l) => l.usuario === user.nombre) : data;
+        const propios = data.filter((l) => l.usuario === user.nombre);
         setLogs(propios.slice(0, 5));
       } catch (err) {
         console.error("❌ Error al obtener logs:", err);
