@@ -5,7 +5,19 @@ import { getRutaPorRol } from "../../utils/rutasPorRol";
 import FloatingBanner from "../FloatingBanner";
 import { XCircle } from "lucide-react";
 
-
+const getEstadoColor = (estado = "") => {
+  const colores = {
+    pendiente: "bg-yellow-200 text-yellow-800",
+    reprogramada: "bg-orange-200 text-orange-800",
+    firmada: "bg-indigo-200 text-indigo-800",
+    validada: "bg-green-200 text-green-800",
+    completada: "bg-green-200 text-green-800",
+    realizada: "bg-green-200 text-green-800",
+    cancelada: "bg-red-200 text-red-800",
+    proyectado: "bg-gray-200 text-gray-700",
+  };
+  return colores[estado?.toLowerCase()] || "bg-gray-200 text-gray-700";
+};
 
 export default function EventModal({ evento, onClose }) {
   const navigate = useNavigate();
