@@ -20,6 +20,7 @@ import Reportes from "./pages/functions/Reportes";
 import Alertas from "./pages/functions/Alertas";
 import Visualizar from "./pages/functions/ListaEquipos";
 import Planificacion from "./pages/functions/Planificacion";
+import Calendario from "./pages/functions/Calendario";
 import AsignarOrdenes from "./pages/functions/AsignarOrden";
 import HistorialTecnico from "./pages/functions/HistorialTécnico";
 import ValidarOrdenes from "./pages/functions/ValidarOrdenes";
@@ -92,6 +93,7 @@ function App() {
           }
         >
           <Route index element={<InicioTecnico />} />
+          <Route path="calendario" element={<Calendario />} />
           <Route path="alertas" element={<Alertas />} />
           <Route path="historial" element={<HistorialTecnico />} />
           <Route path="registros-firmas" element={<RegistrosFirmas />} />
@@ -107,6 +109,7 @@ function App() {
           }
         >
           <Route index element={<InicioSupervisor />} />
+          <Route path="calendario" element={<Calendario />} />
           <Route path="alertas" element={<Alertas />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />

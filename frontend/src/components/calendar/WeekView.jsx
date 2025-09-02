@@ -39,7 +39,7 @@ export default function WeekView({ fechaActual, eventos, onEventClick }) {
               {eventosDelDia.length > 0 ? (
                 eventosDelDia.map((ev, idx) => (
                   <div
-                    key={idx}
+                    key={ev.id || idx}
                     onClick={() => onEventClick(ev)}
                     title={ev.title}
                     className={`rounded px-2 py-1 cursor-pointer text-xs leading-snug line-clamp-3 break-words overflow-hidden ${
