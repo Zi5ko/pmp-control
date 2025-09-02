@@ -47,6 +47,12 @@ export default function Sidebar() {
       roles: [1, 2, 3, 5, 6],
     },
     {
+      path: `${basePath}/calendario`,
+      label: "Calendario de Mantenimientos",
+      icon: Calendar,
+      roles: [2, 3],
+    },
+    {
       label: "Gestión de Equipos",
       icon: MonitorDot,
       roles: [1, 6],

@@ -2,7 +2,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
+import FloatingBanner from "../FloatingBanner";
+import { XCircle } from "lucide-react";
 
+const getEstadoColor = (estado = "") => {
+  const colores = {
+    pendiente: "bg-yellow-200 text-yellow-800",
+    reprogramada: "bg-orange-200 text-orange-800",
+    firmada: "bg-indigo-200 text-indigo-800",
+    validada: "bg-green-200 text-green-800",
+    completada: "bg-green-200 text-green-800",
+    realizada: "bg-green-200 text-green-800",
+    cancelada: "bg-red-200 text-red-800",
+    proyectado: "bg-gray-200 text-gray-700",
+  };
+  return colores[estado?.toLowerCase()] || "bg-gray-200 text-gray-700";
+};
 
 export default function EventModal({ evento, onClose }) {
   const navigate = useNavigate();
@@ -14,14 +29,14 @@ export default function EventModal({ evento, onClose }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const rolPath = getRutaPorRol(user?.rol_nombre);
 
-  const handleGestionClick = () => {
-    navigate(`${rolPath}/gestion?equipo_id=${evento.equipo_id}`);
-  };
-
   const confirmarReprogramacion = () => {
     setMostrarConfirmacion(false);
-    onClose(); // Cerramos el modal primero
-    navigate(`/${rolNombre}/gestion?equipo_id=${evento.equipo_id}&fecha_anterior=${evento.start.toISOString().split("T")[0]}`);
+    onClose();
+    navigate(
+      `${rolPath}/gestion?equipo_id=${evento.equipo_id}&fecha_anterior=${
+        evento.start.toISOString().split("T")[0]
+      }`
+    );
   };
 
   return (
@@ -32,7 +47,7 @@ export default function EventModal({ evento, onClose }) {
             className="absolute top-6 right-6 text-[#111A3A] hover:text-gray-600"
             onClick={onClose}
           >
-            <CircleX size={20} />
+            <XCircle size={20} />
           </button>
 
           <h2 className="text-lg font-bold text-[#111A3A] mb-2">
