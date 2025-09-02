@@ -133,14 +133,30 @@ export default function EventModal({ evento, onClose }) {
             </button>
           )}
 
-          {!esProyectado && rol === "tecnico" && (
-            <button
-              className="mt-6 w-full bg-[#D0FF34] text-[#111A3A] font-semibold py-2 rounded shadow hover:bg-lime-300 text-sm"
-              onClick={() => setMostrarEjecutar(true)}
-            >
-              Ejecutar orden
-            </button>
-          )}
+          {!esProyectado &&
+            rol === "tecnico" &&
+            evento.estado?.toLowerCase() === "pendiente" && (
+              <button
+                className="mt-6 w-full bg-[#D0FF34] text-[#111A3A] font-semibold py-2 rounded shadow hover:bg-lime-300 text-sm"
+                onClick={() => setMostrarEjecutar(true)}
+              >
+                Ejecutar orden
+              </button>
+            )}
+
+          {!esProyectado &&
+            rol === "tecnico" &&
+            evento.estado?.toLowerCase() === "validada" && (
+              <button
+                className="mt-6 w-full bg-[#D0FF34] text-[#111A3A] font-semibold py-2 rounded shadow hover:bg-lime-300 text-sm"
+                onClick={() => {
+                  onClose();
+                  navigate(`${rolPath}/registros-firmas?orden_id=${evento.id}`);
+                }}
+              >
+                Registrar firma
+              </button>
+            )}
 
           {!esProyectado && rol === "supervisor" && !evento.responsable && (
             <button
