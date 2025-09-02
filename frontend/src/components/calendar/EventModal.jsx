@@ -41,7 +41,7 @@ export default function EventModal({ evento, onClose }) {
     navigate(
       `${rolPath}/gestion?equipo_id=${evento.equipo_id}&fecha_anterior=${
         evento.start.toISOString().split("T")[0]
-      }`
+      }&orden_id=${evento.id}`
     );
   };
 
