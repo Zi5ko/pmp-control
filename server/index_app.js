@@ -32,6 +32,7 @@ app.use('/api/ordenes', require('./routes/ordenesRoutes'));
 app.use('/api/planes', require('./routes/planesRoutes'));
 app.use('/api/equipos', require('./routes/equiposRoutes'));
 app.use('/api/evidencias', evidenciasRoutes);
+app.use('/api/roles', require('./routes/rolesRoutes'));
 
 
 //Manejo de errores básico
