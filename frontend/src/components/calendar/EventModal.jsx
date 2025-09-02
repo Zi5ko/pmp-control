@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
-import { CircleX } from "lucide-react";
+import FloatingBanner from "../FloatingBanner";
+import { XCircle } from "lucide-react";
+
 
 
 export default function EventModal({ evento, onClose }) {
@@ -15,14 +17,14 @@ export default function EventModal({ evento, onClose }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const rolPath = getRutaPorRol(user?.rol_nombre);
 
-  const handleGestionClick = () => {
-    navigate(`${rolPath}/gestion?equipo_id=${evento.equipo_id}`);
-  };
-
   const confirmarReprogramacion = () => {
     setMostrarConfirmacion(false);
-    onClose(); // Cerramos el modal primero
-    navigate(`/${rolNombre}/gestion?equipo_id=${evento.equipo_id}&fecha_anterior=${evento.start.toISOString().split("T")[0]}`);
+    onClose();
+    navigate(
+      `${rolPath}/gestion?equipo_id=${evento.equipo_id}&fecha_anterior=${
+        evento.start.toISOString().split("T")[0]
+      }`
+    );
   };
 
   return (
@@ -33,7 +35,7 @@ export default function EventModal({ evento, onClose }) {
             className="absolute top-6 right-6 text-[#111A3A] hover:text-gray-600"
             onClick={onClose}
           >
-            <CircleX size={20} />
+            <XCircle size={20} />
           </button>
 
           <h2 className="text-lg font-bold text-[#111A3A] mb-2">
