@@ -10,6 +10,7 @@ const {
   obtenerOrden,
   crearNuevaOrden,
   cambiarEstado,
+  reprogramarOrden,
   detalleOrden,
   calendarizarMantenimientos,
   ejecutarOrden,
@@ -32,6 +33,7 @@ router.get('/', listarOrdenes);
 router.get('/ordenes/:id', obtenerOrden);
 router.post('/', crearNuevaOrden);
 router.put('/:id/estado', cambiarEstado);
+router.put('/:id/reprogramar', reprogramarOrden);
 router.get('/:id/detalle', detalleOrden);
 router.put('/:id', validarEstadoOrden, validarOrden);
 

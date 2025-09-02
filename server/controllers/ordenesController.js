@@ -126,6 +126,38 @@ async function cambiarEstado(req, res) {
   }
 }
 
+// 4b. Reprogramar orden
+async function reprogramarOrden(req, res) {
+  try {
+    const { id } = req.params;
+    const { fecha_programada } = req.body;
+
+    const { rowCount, rows } = await db.query(
+      `UPDATE ordenes_trabajo
+       SET fecha_programada = $1, estado = 'pendiente'
+       WHERE id = $2
+       RETURNING *`,
+      [fecha_programada, id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+
+    await crearLog({
+      usuario_id: 2, // temporal
+      accion: 'reprogramar_orden',
+      tabla: 'ordenes_trabajo',
+      registro_id: id,
+    });
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('❌ Error al reprogramar orden:', err);
+    res.status(500).json({ error: 'Error al reprogramar orden' });
+  }
+}
+
 // 5. Detalle de orden
 async function detalleOrden(req, res) {
   try {
@@ -641,6 +673,7 @@ module.exports = {
   obtenerOrden,
   crearNuevaOrden,
   cambiarEstado,
+  reprogramarOrden,
   detalleOrden,
   calendarizarMantenimientos,
   ejecutarOrden,

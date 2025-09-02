@@ -113,15 +113,9 @@ export default function GestionPlanificacion() {
 
     try {
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/estado`,
-        { estado: "reprogramada" }
+        `${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/reprogramar`,
+        { fecha_programada: fechaReprogramacion }
       );
-
-      await axios.post(`${import.meta.env.VITE_API_URL}/ordenes`, {
-        equipo_id: Number(equipoIdParam),
-        fecha_programada: fechaReprogramacion,
-        estado: "pendiente",
-      });
 
       setMensaje({
         tipo: "success",
