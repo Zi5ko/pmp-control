@@ -11,7 +11,7 @@ const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
 export default function GestionPlanificacion() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [equipos, setEquipos] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
@@ -128,6 +128,9 @@ export default function GestionPlanificacion() {
         texto: "Mantenimiento reprogramado con éxito.",
       });
       setFechaReprogramacion("");
+      setModoReprogramacion(false);
+      setSearchParams({});
+
     } catch (err) {
       console.error("Error al reprogramar:", err);
       setMensaje({
@@ -254,7 +257,47 @@ export default function GestionPlanificacion() {
         </table>
       </div>
 
-      {!modoReprogramacion && (
+      {modoReprogramacion ? (
+        <>
+          <div>
+            <h2 className="mt-8 text-lg font-medium text-gray-700">
+              Reprogramar mantenimiento
+            </h2>
+          </div>
+          <div className="mt-2 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
+            {ordenInfo && (
+              <div className="text-sm text-gray-700 mb-4">
+                <p>
+                  <span className="font-medium">Equipo:</span> {ordenInfo.equipo_nombre}
+                </p>
+                <p>
+                  <span className="font-medium">Ubicación:</span> {ordenInfo.ubicacion}
+                </p>
+                <p>
+                  <span className="font-medium">ID:</span> {formatearID(equipoIdParam)}
+                </p>
+              </div>
+            )}
+            <p className="text-sm text-gray-600 mb-4">
+              Fecha original: {new Date(fechaAnterior).toLocaleDateString("es-CL")}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <input
+                type="date"
+                value={fechaReprogramacion}
+                onChange={(e) => setFechaReprogramacion(e.target.value)}
+                className="w-full sm:w-auto bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm"
+              />
+              <button
+                onClick={handleReprogramar}
+                className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
+              >
+                Guardar reprogramación
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
         <>
           <div>
             <h2 className="mt-8 text-lg font-medium text-gray-700">
