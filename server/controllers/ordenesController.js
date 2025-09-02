@@ -66,14 +66,19 @@ async function crearNuevaOrden(req, res) {
     const plan_id = result.rows[0].plan_id;
 
     // Verifica que no exista ya una orden pendiente para este equipo
-    const { rowCount: ordenesActivas } = await db.query(`
+    const { rowCount: ordenesActivas } = await db.query(
+      `
       SELECT 1 FROM ordenes_trabajo
-      WHERE equipo_id = $1 AND estado IN ('pendiente', 'reprogramada')
+      WHERE equipo_id = $1 AND estado = 'pendiente'
       LIMIT 1
-    `, [equipo_id]);
+    `,
+      [equipo_id]
+    );
 
     if (ordenesActivas > 0) {
-      return res.status(409).json({ error: "Ya existe una orden activa para este equipo." });
+      return res
+        .status(409)
+        .json({ error: "Ya existe una orden activa para este equipo." });
     }
 
     const insert = await db.query(
