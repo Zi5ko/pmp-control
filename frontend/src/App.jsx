@@ -134,6 +134,7 @@ function App() {
           <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
+          <Route path="gestion" element={<GestionPlanificacion />} />
         </Route>
 
         {/* ESMP */}
@@ -154,6 +155,7 @@ function App() {
           <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="auditoria" element={<Auditoria />} />
+          <Route path="gestion" element={<GestionPlanificacion />} />
         </Route>
 
         {/* Fallback */}

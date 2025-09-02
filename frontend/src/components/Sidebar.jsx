@@ -48,7 +48,7 @@ export default function Sidebar() {
     },
     {
       path: `${basePath}/calendario`,
-      label: "Calendario de Mantenimientos",
+      label: "Calendario",
       icon: Calendar,
       roles: [2, 3],
     },
