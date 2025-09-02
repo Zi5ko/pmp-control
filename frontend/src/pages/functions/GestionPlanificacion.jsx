@@ -20,6 +20,7 @@ export default function GestionPlanificacion() {
   const [mensaje, setMensaje] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [modoReprogramacion, setModoReprogramacion] = useState(false);
+  const [ordenInfo, setOrdenInfo] = useState(null);
 
   const ordenId = searchParams.get("orden_id");
   const equipoIdParam = searchParams.get("equipo_id");
@@ -49,6 +50,17 @@ export default function GestionPlanificacion() {
       setModoReprogramacion(true);
     }
   }, [ordenId, equipoIdParam, fechaAnterior]);
+
+  useEffect(() => {
+    if (modoReprogramacion && ordenId) {
+      axios
+        .get(`${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/detalle`)
+        .then((res) => setOrdenInfo(res.data))
+        .catch((err) => {
+          console.error("Error al cargar datos de la orden:", err);
+        });
+    }
+  }, [modoReprogramacion, ordenId]);
 
   const toggleSeleccion = (id) => {
     setSeleccionados((prev) =>
@@ -141,6 +153,20 @@ export default function GestionPlanificacion() {
           <h2 className="text-lg font-medium text-gray-700 mb-2">
             Reprogramar mantenimiento
           </h2>
+          {ordenInfo && (
+            <div className="text-sm text-gray-700 mb-4">
+              <p>
+                <span className="font-medium">Equipo:</span> {ordenInfo.equipo_nombre}
+              </p>
+              <p>
+                <span className="font-medium">Ubicación:</span> {ordenInfo.ubicacion}
+              </p>
+              <p>
+                <span className="font-medium">ID:</span> {formatearID(equipoIdParam)}
+              </p>
+            </div>
+          )}
+
           <p className="text-sm text-gray-600 mb-4">
             Fecha original: {new Date(fechaAnterior).toLocaleDateString("es-CL")}
           </p>
@@ -175,7 +201,11 @@ export default function GestionPlanificacion() {
 
       </div>
 
-      <div className="overflow-x-auto bg-white shadow rounded-xl">
+      <div
+        className={`overflow-x-auto bg-white shadow rounded-xl ${
+          modoReprogramacion ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr className="text-left text-sm text-gray-600">
@@ -224,37 +254,46 @@ export default function GestionPlanificacion() {
         </table>
       </div>
 
-      <div>
-      <h2 className="mt-8 text-lg font-medium text-gray-700">Confirmar Programa de Mantenimiento</h2>
-      </div>
-
-      {/* CONTENEDOR DE FECHA + BOTÓN */}
-      <div className="mt-2 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
-        {/* Label + Input fecha */}
-        <div className="w-full sm:w-auto">
-          <label htmlFor="fecha_programada" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de Ejecución
-          </label>
-          <div className="flex items-center rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm">
-            <input
-              type="date"
-              id="fecha_programada"
-              name="fecha_programada"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="w-full bg-white text-sm text-gray-800 outline-none appearance-none"
-            />
+      {!modoReprogramacion && (
+        <>
+          <div>
+            <h2 className="mt-8 text-lg font-medium text-gray-700">
+              Confirmar Programa de Mantenimiento
+            </h2>
           </div>
-        </div>
 
-        {/* Botón de guardar */}
-        <button
-          onClick={handleSubmit}
-          className=" bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
-        >
-          Guardar planificación
-        </button>
-      </div>
+          {/* CONTENEDOR DE FECHA + BOTÓN */}
+          <div className="mt-2 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
+            {/* Label + Input fecha */}
+            <div className="w-full sm:w-auto">
+              <label
+                htmlFor="fecha_programada"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Fecha de Ejecución
+              </label>
+              <div className="flex items-center rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm">
+                <input
+                  type="date"
+                  id="fecha_programada"
+                  name="fecha_programada"
+                  value={fecha}
+                  onChange={(e) => setFecha(e.target.value)}
+                  className="w-full bg-white text-sm text-gray-800 outline-none appearance-none"
+                />
+              </div>
+            </div>
+
+            {/* Botón de guardar */}
+            <button
+              onClick={handleSubmit}
+              className=" bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
+            >
+              Guardar planificación
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
