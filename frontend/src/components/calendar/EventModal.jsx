@@ -6,6 +6,7 @@ import FloatingBanner from "../FloatingBanner";
 import ModalEjecutarOrden from "../ordenes/ModalEjecutarOrden";
 import { XCircle, Flag } from "lucide-react";
 
+
 const getEstadoColor = (estado = "") => {
   const colores = {
     pendiente: "bg-yellow-200 text-yellow-800",
@@ -34,6 +35,7 @@ export default function EventModal({ evento, onClose }) {
     ?.normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+
 
   const confirmarReprogramacion = () => {
     setMostrarConfirmacion(false);

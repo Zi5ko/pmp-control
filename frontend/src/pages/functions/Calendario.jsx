@@ -35,6 +35,7 @@ export default function Calendario() {
         plan: evento.plan || "-",
         ubicacion: evento.ubicacion || "-",
         responsable: evento.responsable || null,
+
         equipo_id: evento.equipo_id
       }));
 

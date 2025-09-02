@@ -97,6 +97,7 @@ function App() {
           <Route path="alertas" element={<Alertas />} />
           <Route path="historial" element={<HistorialTecnico />} />
           <Route path="registros-firmas" element={<RegistrosFirmas />} />
+          <Route path="reportes" element={<Reportes />} />
         </Route>
 
         {/* SUPERVISOR */}
@@ -133,6 +134,7 @@ function App() {
           <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
+          <Route path="gestion" element={<GestionPlanificacion />} />
         </Route>
 
         {/* ESMP */}
@@ -153,6 +155,7 @@ function App() {
           <Route path="planificacion" element={<Planificacion />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="auditoria" element={<Auditoria />} />
+          <Route path="gestion" element={<GestionPlanificacion />} />
         </Route>
 
         {/* Fallback */}
