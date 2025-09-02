@@ -1,6 +1,6 @@
 // frontend/src/pages/functions/GestionPlanificacion.jsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import axios from "axios";
 import SuccessBanner from "../../components/SuccesBanner";
@@ -11,12 +11,19 @@ const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
 export default function GestionPlanificacion() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const [searchParams] = useSearchParams();
 
   const [equipos, setEquipos] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
   const [fecha, setFecha] = useState("");
+  const [fechaReprogramacion, setFechaReprogramacion] = useState("");
   const [mensaje, setMensaje] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [modoReprogramacion, setModoReprogramacion] = useState(false);
+
+  const ordenId = searchParams.get("orden_id");
+  const equipoIdParam = searchParams.get("equipo_id");
+  const fechaAnterior = searchParams.get("fecha_anterior");
 
   useEffect(() => {
     const rolId = Number(user?.rol_id);
@@ -36,6 +43,12 @@ export default function GestionPlanificacion() {
         setMensaje({ tipo: "error", texto: "Error al cargar equipos." });
       });
   }, []);
+
+  useEffect(() => {
+    if (ordenId && equipoIdParam && fechaAnterior) {
+      setModoReprogramacion(true);
+    }
+  }, [ordenId, equipoIdParam, fechaAnterior]);
 
   const toggleSeleccion = (id) => {
     setSeleccionados((prev) =>
@@ -80,6 +93,38 @@ export default function GestionPlanificacion() {
     eq.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
+  const handleReprogramar = async () => {
+    if (!fechaReprogramacion) {
+      setMensaje({ tipo: "error", texto: "Selecciona una nueva fecha." });
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/estado`,
+        { estado: "reprogramada" }
+      );
+
+      await axios.post(`${import.meta.env.VITE_API_URL}/ordenes`, {
+        equipo_id: Number(equipoIdParam),
+        fecha_programada: fechaReprogramacion,
+        estado: "pendiente",
+      });
+
+      setMensaje({
+        tipo: "success",
+        texto: "Mantenimiento reprogramado con éxito.",
+      });
+      setFechaReprogramacion("");
+    } catch (err) {
+      console.error("Error al reprogramar:", err);
+      setMensaje({
+        tipo: "error",
+        texto: "Error al reprogramar mantenimiento.",
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       {mensaje?.tipo === "success" && (
@@ -90,6 +135,31 @@ export default function GestionPlanificacion() {
       )}
 
       <h1 className="text-2xl font mb-4">Planificación de Mantenimientos</h1>
+
+      {modoReprogramacion && (
+        <div className="mb-6 p-4 bg-white border border-gray-200 rounded-xl shadow">
+          <h2 className="text-lg font-medium text-gray-700 mb-2">
+            Reprogramar mantenimiento
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Fecha original: {new Date(fechaAnterior).toLocaleDateString("es-CL")}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <input
+              type="date"
+              value={fechaReprogramacion}
+              onChange={(e) => setFechaReprogramacion(e.target.value)}
+              className="w-full sm:w-auto bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm"
+            />
+            <button
+              onClick={handleReprogramar}
+              className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
+            >
+              Guardar reprogramación
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center mb-4">
         <div className="relative w-full max-w-sm">
