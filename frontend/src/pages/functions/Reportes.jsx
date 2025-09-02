@@ -77,7 +77,7 @@ export default function Reportes() {
                     onClick={() => setOrdenSeleccionada(orden)}
                     className="bg-[#D0FF34] text-[#111A3A] px-6 py-1 rounded shadow hover:bg-lime-300"
                   >
-                    <th className="text-sm">Ejecutar Orden</th>
+                    <span className="text-sm">Ejecutar Orden</span>
                   </button>
                   </td>
                 </tr>

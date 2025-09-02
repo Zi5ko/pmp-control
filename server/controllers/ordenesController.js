@@ -271,6 +271,7 @@ const obtenerOrdenesPendientesAsignadas = async (req, res) => {
       JOIN equipos e ON o.equipo_id = e.id
       LEFT JOIN usuarios u ON o.responsable = CAST(u.id AS VARCHAR)
       WHERE o.estado = 'pendiente'
+        AND o.responsable IS NOT NULL
         AND o.fecha_programada <= $1
     `;
 
@@ -290,12 +291,22 @@ const obtenerOrdenesPendientesAsignadas = async (req, res) => {
 // 11. Obtener órdenes sin responsable
 async function obtenerOrdenesSinResponsable(req, res) {
   try {
-    const { rows } = await db.query(`
+    const hoy = new Date();
+    const hasta = endOfWeek(hoy, { weekStartsOn: 0 }); // Domingo siguiente
+
+    const comparador = req.query.futuras === "true" ? ">" : "<=";
+
+    const { rows } = await db.query(
+      `
       SELECT o.*, e.nombre AS equipo_nombre, e.ubicacion
       FROM ordenes_trabajo o
       JOIN equipos e ON o.equipo_id = e.id
-      WHERE o.estado = 'pendiente' AND o.responsable IS NULL
-    `);
+      WHERE o.estado = 'pendiente'
+        AND o.responsable IS NULL
+        AND o.fecha_programada ${comparador} $1
+    `,
+      [hasta.toISOString().slice(0, 10)]
+    );
     res.json(rows);
   } catch (error) {
     console.error("❌ Error al obtener órdenes sin responsable:", error);
