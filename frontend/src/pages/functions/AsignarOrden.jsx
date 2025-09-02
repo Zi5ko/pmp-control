@@ -14,10 +14,14 @@ export default function AsignarOrdenes() {
   const [tecnicoAsignado, setTecnicoAsignado] = useState("");
   const [mensaje, setMensaje] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [verFuturas, setVerFuturas] = useState(false);
 
-  const fetchOrdenes = async () => {
+  const fetchOrdenes = async (futuras = false) => {
     try {
-      const { data } = await api.get("/ordenes/pendientes-sin-responsable");
+      const endpoint = futuras
+        ? "/ordenes/pendientes-sin-responsable?futuras=true"
+        : "/ordenes/pendientes-sin-responsable";
+      const { data } = await api.get(endpoint);
       setOrdenes(data);
     } catch (err) {
       console.error("Error al cargar órdenes:", err);
@@ -39,6 +43,13 @@ export default function AsignarOrdenes() {
     fetchOrdenes();
     fetchTecnicos();
   }, []);
+
+  const toggleFuturas = () => {
+    const nuevoEstado = !verFuturas;
+    setVerFuturas(nuevoEstado);
+    setSeleccionados([]);
+    fetchOrdenes(nuevoEstado);
+  };
 
   const toggleSeleccion = (id) => {
     setSeleccionados((prev) =>
@@ -72,7 +83,7 @@ export default function AsignarOrdenes() {
       setMensaje({ tipo: "success", texto: "Órdenes asignadas con éxito." });
       setSeleccionados([]);
       setTecnicoAsignado("");
-      fetchOrdenes();
+      fetchOrdenes(verFuturas);
     } catch (err) {
       console.error("Error al asignar técnico:", err);
       setMensaje({ tipo: "error", texto: "Error al asignar técnico." });
@@ -105,6 +116,12 @@ export default function AsignarOrdenes() {
             className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D0FF34]"
           />
         </div>
+        <button
+          onClick={toggleFuturas}
+          className="ml-4 bg-[#D0FF34] text-[#111A3A] px-4 py-2 rounded shadow hover:bg-lime-300"
+        >
+          {verFuturas ? "Ver hasta el próximo domingo" : "Ver posteriores al próximo domingo"}
+        </button>
       </div>
       
       <div className="flex flex-col md:flex-row justify-between gap-6">
