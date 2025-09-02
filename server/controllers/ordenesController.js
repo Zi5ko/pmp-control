@@ -497,10 +497,11 @@ async function obtenerEventosCalendario(req, res) {
     let queryOrdenes = `
       SELECT ot.id, ot.equipo_id, ot.plan_id, ot.fecha_programada, ot.estado,
              eq.nombre, eq.serie, eq.criticidad, eq.ubicacion,
-             pm.nombre AS plan
+             pm.nombre AS plan, u.nombre AS responsable
       FROM ordenes_trabajo ot
       JOIN equipos eq ON ot.equipo_id = eq.id
-      JOIN planes_mantenimiento pm ON eq.plan_id = pm.id`;
+      JOIN planes_mantenimiento pm ON eq.plan_id = pm.id
+      LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)`;
 
     const params = [];
     if (rolId === 2) {
@@ -525,6 +526,7 @@ async function obtenerEventosCalendario(req, res) {
         ubicacion: ot.ubicacion,
         serie: ot.serie,
         plan: ot.plan,
+        responsable: ot.responsable,
       });
     });
 

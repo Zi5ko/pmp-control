@@ -50,6 +50,7 @@ export default function Planificacion() {
         serie: evento.serie || "-",
         plan: evento.plan || "-",
         ubicacion: evento.ubicacion || "-",
+        responsable: evento.responsable || null,
         equipo_id: evento.equipo_id
       }));
 
