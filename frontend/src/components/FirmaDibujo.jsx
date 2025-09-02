@@ -17,17 +17,28 @@ export default function FirmaDibujo({ onSave }) {
   };
 
   return (
-    <div className="space-y-2">
-      <SignatureCanvas
-        penColor="black"
-        canvasProps={{ className: "border w-full h-32 rounded" }}
-        ref={sigCanvas}
-      />
-      <div className="flex gap-2">
-        <Button type="button" onClick={guardarFirma}>
+    <div className="space-y-3">
+      <div className="rounded-xl border border-gray-300 bg-white p-3 shadow-sm">
+        <SignatureCanvas
+          penColor="black"
+          canvasProps={{ className: "w-full h-32 rounded-lg cursor-crosshair" }}
+          ref={sigCanvas}
+        />
+      </div>
+      <div className="flex justify-center gap-3">
+        <Button
+          type="button"
+          onClick={guardarFirma}
+          className="px-4 py-1.5 text-sm"
+        >
           Guardar
         </Button>
-        <Button variant="outline" type="button" onClick={limpiarFirma}>
+        <Button
+          variant="outline"
+          type="button"
+          onClick={limpiarFirma}
+          className="px-4 py-1.5 text-sm"
+        >
           Limpiar
         </Button>
       </div>

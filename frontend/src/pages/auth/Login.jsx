@@ -8,6 +8,7 @@ import ErrorBanner from "../../components/ErrorBanner"; // IMPORTACIÓN
 import { useSearchParams } from "react-router-dom";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
 
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");

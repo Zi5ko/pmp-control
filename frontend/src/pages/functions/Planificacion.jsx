@@ -133,7 +133,7 @@ export default function Planificacion() {
 
           {/* Filtro de criticidad */}
           <div className="bg-[#5C7BA1] rounded-xl shadow p-4 text-white">
-            <h3 className="text-sm font-semibold mb-2">Tareas</h3>
+            <h3 className="text-sm font-semibold mb-2">Filtro de criticidad</h3>
             <ul className="space-y-2 text-sm">
               {["crítico", "relevante", "instalación"].map((tipo) => (
                 <li key={tipo}>
@@ -182,7 +182,7 @@ export default function Planificacion() {
                 onClick={() => navigate(`${basePath}/gestion`)}
                 className="mt-4 w-full text-xs bg-white text-[#5C7BA1] py-1.5 rounded hover:bg-gray-100 font-semibold"
               >
-                Ir a gestión avanzada de planificación
+                Ir a gestión de planificación
               </button>
             </div>
           )}

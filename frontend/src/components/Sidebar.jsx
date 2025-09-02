@@ -27,6 +27,7 @@ export default function Sidebar() {
   const rolId = Number(user?.rol_id); // 1=admin, 2=técnico, 3=supervisor, 5=responsable institucional, 6=esmp
   const basePath = getRutaPorRol(user?.rol_nombre);
 
+
   const [openSubmenus, setOpenSubmenus] = useState({});
 
   const toggleSubmenu = (label) => {
