@@ -4,7 +4,7 @@ const fs = require('fs');
 const db = require('../db');
 const { endOfWeek } = require("date-fns");
 const generarReportePDF = require('../utils/generarReportes');
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 
 const {
   getOrdenes,
@@ -440,8 +440,14 @@ const generarPDF = async (req, res) => {
     }
 
     // Guardar firmas temporales
-    const firmaTecnicoPath = path.join(__dirname, `../uploads/firmas/firmaTecnico_${uuidv4()}.png`);
-    const firmaServicioPath = path.join(__dirname, `../uploads/firmas/firmaServicio_${uuidv4()}.png`);
+    const firmaTecnicoPath = path.join(
+      __dirname,
+      `../uploads/firmas/firmaTecnico_${randomUUID()}.png`
+    );
+    const firmaServicioPath = path.join(
+      __dirname,
+      `../uploads/firmas/firmaServicio_${randomUUID()}.png`
+    );
 
     const firmaTBuffer = Buffer.from(firmaTecnico.replace(/^data:image\/\w+;base64,/, ""), "base64");
     const firmaSBuffer = Buffer.from(firmaServicio.replace(/^data:image\/\w+;base64,/, ""), "base64");
@@ -484,16 +490,26 @@ const generarPDF = async (req, res) => {
 async function obtenerEventosCalendario(req, res) {
   try {
     const eventos = [];
+    const { rol_id, sub: usuario_id } = req.user || {};
+    const rolId = Number(rol_id);
 
     // 1. Obtener todas las órdenes reales (planificadas)
-    const { rows: ordenes } = await db.query(`
+    let queryOrdenes = `
       SELECT ot.id, ot.equipo_id, ot.plan_id, ot.fecha_programada, ot.estado,
              eq.nombre, eq.serie, eq.criticidad, eq.ubicacion,
-             pm.nombre AS plan
+             pm.nombre AS plan, u.nombre AS responsable
       FROM ordenes_trabajo ot
       JOIN equipos eq ON ot.equipo_id = eq.id
       JOIN planes_mantenimiento pm ON eq.plan_id = pm.id
-    `);
+      LEFT JOIN usuarios u ON ot.responsable = CAST(u.id AS VARCHAR)`;
+
+    const params = [];
+    if (rolId === 2) {
+      queryOrdenes += ` WHERE ot.responsable = $1`;
+      params.push(usuario_id.toString());
+    }
+
+    const { rows: ordenes } = await db.query(queryOrdenes, params);
 
     // Eventos reales planificados
     ordenes.forEach((ot) => {
@@ -510,52 +526,55 @@ async function obtenerEventosCalendario(req, res) {
         ubicacion: ot.ubicacion,
         serie: ot.serie,
         plan: ot.plan,
+        responsable: ot.responsable,
       });
     });
 
-    // 2. Obtener última OT registrada por equipo (independiente del estado)
-    const { rows: ultimasOTs } = await db.query(`
-      SELECT DISTINCT ON (e.id) 
-             e.id AS equipo_id,
-             e.nombre,
-             e.serie,
-             e.ubicacion,
-             e.criticidad,
-             pm.frecuencia,
-             pm.nombre AS plan,
-             ot.fecha_programada AS ultima_fecha
-      FROM equipos e
-      JOIN planes_mantenimiento pm ON e.plan_id = pm.id
-      JOIN ordenes_trabajo ot ON ot.equipo_id = e.id
-      WHERE pm.activo = TRUE
-      ORDER BY e.id, ot.fecha_programada DESC
-    `);
+    // 2. Proyecciones solo para roles con planificación
+    if (rolId !== 2) {
+      const { rows: ultimasOTs } = await db.query(`
+        SELECT DISTINCT ON (e.id)
+               e.id AS equipo_id,
+               e.nombre,
+               e.serie,
+               e.ubicacion,
+               e.criticidad,
+               pm.frecuencia,
+               pm.nombre AS plan,
+               ot.fecha_programada AS ultima_fecha
+        FROM equipos e
+        JOIN planes_mantenimiento pm ON e.plan_id = pm.id
+        JOIN ordenes_trabajo ot ON ot.equipo_id = e.id
+        WHERE pm.activo = TRUE
+        ORDER BY e.id, ot.fecha_programada DESC
+      `);
 
-    for (const eq of ultimasOTs) {
-      const semanas = FRECUENCIA_SEMANAS[eq.frecuencia];
-      if (!semanas || !eq.ultima_fecha) continue;
+      for (const eq of ultimasOTs) {
+        const semanas = FRECUENCIA_SEMANAS[eq.frecuencia];
+        if (!semanas || !eq.ultima_fecha) continue;
 
-      const fechaBase = new Date(eq.ultima_fecha);
-      const cantidadProyecciones = Math.floor(52 / semanas);
+        const fechaBase = new Date(eq.ultima_fecha);
+        const cantidadProyecciones = Math.floor(52 / semanas);
 
-      for (let i = 1; i <= cantidadProyecciones; i++) {
-        const proximaFecha = new Date(fechaBase);
-        proximaFecha.setDate(proximaFecha.getDate() + i * semanas * 7);
+        for (let i = 1; i <= cantidadProyecciones; i++) {
+          const proximaFecha = new Date(fechaBase);
+          proximaFecha.setDate(proximaFecha.getDate() + i * semanas * 7);
 
-        eventos.push({
-          id: `p-${eq.equipo_id}-${i}`,
-          equipo_id: eq.equipo_id,
-          title: eq.nombre,
-          start: proximaFecha.toISOString().slice(0, 10),
-          end: proximaFecha.toISOString().slice(0, 10),
-          allDay: true,
-          criticidad: eq.criticidad,
-          estado: "proyectado",
-          tipo: "proyectado",
-          ubicacion: eq.ubicacion,
-          serie: eq.serie,
-          plan: eq.plan,
-        });
+          eventos.push({
+            id: `p-${eq.equipo_id}-${i}`,
+            equipo_id: eq.equipo_id,
+            title: eq.nombre,
+            start: proximaFecha.toISOString().slice(0, 10),
+            end: proximaFecha.toISOString().slice(0, 10),
+            allDay: true,
+            criticidad: eq.criticidad,
+            estado: "proyectado",
+            tipo: "proyectado",
+            ubicacion: eq.ubicacion,
+            serie: eq.serie,
+            plan: eq.plan,
+          });
+        }
       }
     }
 

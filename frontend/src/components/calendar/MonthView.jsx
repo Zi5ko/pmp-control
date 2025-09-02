@@ -61,7 +61,7 @@ export default function MonthView({ fechaActual, eventos, onEventClick }) {
                 .filter((ev) => isSameDay(new Date(ev.start), d))
                 .map((ev, i) => (
                   <div
-                    key={idx}
+                    key={ev.id || i}
                     onClick={() => onEventClick(ev)}
                     title={ev.title}
                     className={`rounded px-2 py-1 cursor-pointer text-xs leading-snug line-clamp-3 break-words overflow-hidden ${
