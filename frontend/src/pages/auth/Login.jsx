@@ -6,17 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FiMail, FiLock, FiEye } from "react-icons/fi";
 import ErrorBanner from "../../components/ErrorBanner"; // IMPORTACIÓN
 import { useSearchParams } from "react-router-dom";
-
-function getRutaPorRol(rol_nombre) {
-  const rutas = {
-    administrador: "/administrador",
-    técnico: "/tecnico",
-    supervisor: "/supervisor",
-    responsable_institucional: "/responsable",
-    esmp: "/esmp"
-  };
-  return rutas[rol_nombre] || "/login";
-}
+import { getRutaPorRol } from "../../utils/rutasPorRol";
 
 export default function Login() {
   const [email, setEmail] = useState("");

@@ -20,8 +20,10 @@ exports.googleCallback = (req, res, next) => {
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=google`);
     }
 
+    const rolId = Number(user.rol_id);
+
     const token = jwt.sign(
-      { sub: user.id, email: user.email, rol_id: user.rol_id },
+      { sub: user.id, email: user.email, rol_id: rolId },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -60,8 +62,10 @@ exports.localLogin = async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
+    const rolId = Number(user.rol_id);
+
     const token = jwt.sign(
-      { sub: user.id, email: user.email, rol_id: user.rol_id },
+      { sub: user.id, email: user.email, rol_id: rolId },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -71,7 +75,7 @@ exports.localLogin = async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        rol_id: user.rol_id,
+        rol_id: rolId,
         rol_nombre: user.rol_nombre,
         nombre: user.nombre
       }
@@ -98,11 +102,13 @@ exports.me = async (req, res) => {
     const user = result.rows[0];
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
+    const rolId = Number(user.rol_id);
+
     return res.status(200).json({
       id: user.id,
       email: user.email,
       nombre: user.nombre,
-      rol_id: user.rol_id,
+      rol_id: rolId,
       rol_nombre: user.rol_nombre
     });
   } catch (e) {
