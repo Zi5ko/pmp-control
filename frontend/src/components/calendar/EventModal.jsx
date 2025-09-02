@@ -6,6 +6,7 @@ import FloatingBanner from "../FloatingBanner";
 import { XCircle } from "lucide-react";
 
 
+
 export default function EventModal({ evento, onClose }) {
   const navigate = useNavigate();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);

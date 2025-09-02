@@ -3,19 +3,20 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middlewares/auth');
 
-// OJO: el nombre y la ruta del archivo deben coincidir EXACTO
-// con el que creaste en controllers (plural/singular, mayúsculas/minúsculas)
 const {
-    listarUsuarios,
-    obtenerTecnicos
- } = require('../controllers/usuariosController');
+  listarUsuarios,
+  obtenerTecnicos,
+  crearUsuario,
+  actualizarUsuario,
+  eliminarUsuario,
+} = require('../controllers/usuariosController');
 
-// No llames a la función aquí (NO uses paréntesis)
-router.get('/usuarios', listarUsuarios);
+router.get('/usuarios', verifyToken, listarUsuarios);
+router.post('/usuarios', verifyToken, crearUsuario);
+router.put('/usuarios/:id', verifyToken, actualizarUsuario);
+router.delete('/usuarios/:id', verifyToken, eliminarUsuario);
 
-
-// Importar el controlador de usuarios
-
-router.get("/tecnicos", verifyToken, obtenerTecnicos);
+router.get('/tecnicos', verifyToken, obtenerTecnicos);
 
 module.exports = router;
+

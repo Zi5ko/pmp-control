@@ -97,6 +97,7 @@ function App() {
           <Route path="alertas" element={<Alertas />} />
           <Route path="historial" element={<HistorialTecnico />} />
           <Route path="registros-firmas" element={<RegistrosFirmas />} />
+          <Route path="reportes" element={<Reportes />} />
         </Route>
 
         {/* SUPERVISOR */}
