@@ -3,15 +3,10 @@ import api from "../../services/api";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 
-const roles = [
-  { id: 1, nombre: "Administrador" },
-  { id: 2, nombre: "Técnico" },
-  { id: 3, nombre: "Supervisor" },
-];
-
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [mensaje, setMensaje] = useState(null);
+  const [roles, setRoles] = useState([]);
   const [form, setForm] = useState({ nombre: "", email: "", rol_id: "", tipo: "local" });
   const [editId, setEditId] = useState(null);
 
@@ -24,8 +19,18 @@ export default function Usuarios() {
       );
   };
 
+  const cargarRoles = () => {
+    api
+      .get("/roles")
+      .then((res) => setRoles(res.data))
+      .catch(() =>
+        setMensaje({ tipo: "error", texto: "Error al cargar roles." })
+      );
+  };
+
   useEffect(() => {
     cargarUsuarios();
+    cargarRoles();
   }, []);
 
   const handleChange = (e) => {
