@@ -1,6 +1,6 @@
 // frontend/src/pages/functions/GestionPlanificacion.jsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import axios from "axios";
 import SuccessBanner from "../../components/SuccesBanner";
@@ -11,12 +11,20 @@ const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
 export default function GestionPlanificacion() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [equipos, setEquipos] = useState([]);
   const [seleccionados, setSeleccionados] = useState([]);
   const [fecha, setFecha] = useState("");
+  const [fechaReprogramacion, setFechaReprogramacion] = useState("");
   const [mensaje, setMensaje] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [modoReprogramacion, setModoReprogramacion] = useState(false);
+  const [ordenInfo, setOrdenInfo] = useState(null);
+
+  const ordenId = searchParams.get("orden_id");
+  const equipoIdParam = searchParams.get("equipo_id");
+  const fechaAnterior = searchParams.get("fecha_anterior");
 
   useEffect(() => {
     const rolId = Number(user?.rol_id);
@@ -36,6 +44,23 @@ export default function GestionPlanificacion() {
         setMensaje({ tipo: "error", texto: "Error al cargar equipos." });
       });
   }, []);
+
+  useEffect(() => {
+    if (ordenId && equipoIdParam && fechaAnterior) {
+      setModoReprogramacion(true);
+    }
+  }, [ordenId, equipoIdParam, fechaAnterior]);
+
+  useEffect(() => {
+    if (modoReprogramacion && ordenId) {
+      axios
+        .get(`${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/detalle`)
+        .then((res) => setOrdenInfo(res.data))
+        .catch((err) => {
+          console.error("Error al cargar datos de la orden:", err);
+        });
+    }
+  }, [modoReprogramacion, ordenId]);
 
   const toggleSeleccion = (id) => {
     setSeleccionados((prev) =>
@@ -80,6 +105,34 @@ export default function GestionPlanificacion() {
     eq.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
+  const handleReprogramar = async () => {
+    if (!fechaReprogramacion) {
+      setMensaje({ tipo: "error", texto: "Selecciona una nueva fecha." });
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/reprogramar`,
+        { fecha_programada: fechaReprogramacion }
+      );
+
+      setMensaje({
+        tipo: "success",
+        texto: "Mantenimiento reprogramado con éxito.",
+      });
+      setFechaReprogramacion("");
+      setModoReprogramacion(false);
+      setSearchParams({});
+    } catch (err) {
+      console.error("Error al reprogramar:", err);
+      setMensaje({
+        tipo: "error",
+        texto: "Error al reprogramar mantenimiento.",
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       {mensaje?.tipo === "success" && (
@@ -105,7 +158,11 @@ export default function GestionPlanificacion() {
 
       </div>
 
-      <div className="overflow-x-auto bg-white shadow rounded-xl">
+      <div
+        className={`overflow-x-auto bg-white shadow rounded-xl ${
+          modoReprogramacion ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr className="text-left text-sm text-gray-600">
@@ -154,37 +211,86 @@ export default function GestionPlanificacion() {
         </table>
       </div>
 
-      <div>
-      <h2 className="mt-8 text-lg font-medium text-gray-700">Confirmar Programa de Mantenimiento</h2>
-      </div>
-
-      {/* CONTENEDOR DE FECHA + BOTÓN */}
-      <div className="mt-2 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
-        {/* Label + Input fecha */}
-        <div className="w-full sm:w-auto">
-          <label htmlFor="fecha_programada" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de Ejecución
-          </label>
-          <div className="flex items-center rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm">
-            <input
-              type="date"
-              id="fecha_programada"
-              name="fecha_programada"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="w-full bg-white text-sm text-gray-800 outline-none appearance-none"
-            />
+      {modoReprogramacion ? (
+        <>
+          <div>
+            <h2 className="mt-8 text-lg font-medium text-gray-700">
+              Reprogramar mantenimiento
+            </h2>
           </div>
-        </div>
+          <div className="mt-2 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
+            {ordenInfo && (
+              <div className="text-sm text-gray-700 mb-4">
+                <p>
+                  <span className="font-medium">Equipo:</span> {ordenInfo.equipo_nombre}
+                </p>
+                <p>
+                  <span className="font-medium">Ubicación:</span> {ordenInfo.ubicacion}
+                </p>
+                <p>
+                  <span className="font-medium">ID:</span> {formatearID(equipoIdParam)}
+                </p>
+              </div>
+            )}
+            <p className="text-sm text-gray-600 mb-4">
+              Fecha original: {new Date(fechaAnterior).toLocaleDateString("es-CL")}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <input
+                type="date"
+                value={fechaReprogramacion}
+                onChange={(e) => setFechaReprogramacion(e.target.value)}
+                className="w-full sm:w-auto bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm"
+              />
+              <button
+                onClick={handleReprogramar}
+                className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
+              >
+                Guardar reprogramación
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <h2 className="mt-8 text-lg font-medium text-gray-700">
+              Confirmar Programa de Mantenimiento
+            </h2>
+          </div>
 
-        {/* Botón de guardar */}
-        <button
-          onClick={handleSubmit}
-          className=" bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
-        >
-          Guardar planificación
-        </button>
-      </div>
+          {/* CONTENEDOR DE FECHA + BOTÓN */}
+          <div className="mt-2 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl shadow mb-6">
+            {/* Label + Input fecha */}
+            <div className="w-full sm:w-auto">
+              <label
+                htmlFor="fecha_programada"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Fecha de Ejecución
+              </label>
+              <div className="flex items-center rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm">
+                <input
+                  type="date"
+                  id="fecha_programada"
+                  name="fecha_programada"
+                  value={fecha}
+                  onChange={(e) => setFecha(e.target.value)}
+                  className="w-full bg-white text-sm text-gray-800 outline-none appearance-none"
+                />
+              </div>
+            </div>
+
+            {/* Botón de guardar */}
+            <button
+              onClick={handleSubmit}
+              className=" bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:bg-lime-300"
+            >
+              Guardar planificación
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

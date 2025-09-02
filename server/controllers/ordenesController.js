@@ -66,14 +66,19 @@ async function crearNuevaOrden(req, res) {
     const plan_id = result.rows[0].plan_id;
 
     // Verifica que no exista ya una orden pendiente para este equipo
-    const { rowCount: ordenesActivas } = await db.query(`
+    const { rowCount: ordenesActivas } = await db.query(
+      `
       SELECT 1 FROM ordenes_trabajo
-      WHERE equipo_id = $1 AND estado IN ('pendiente', 'reprogramada')
+      WHERE equipo_id = $1 AND estado = 'pendiente'
       LIMIT 1
-    `, [equipo_id]);
+    `,
+      [equipo_id]
+    );
 
     if (ordenesActivas > 0) {
-      return res.status(409).json({ error: "Ya existe una orden activa para este equipo." });
+      return res
+        .status(409)
+        .json({ error: "Ya existe una orden activa para este equipo." });
     }
 
     const insert = await db.query(
@@ -118,6 +123,38 @@ async function cambiarEstado(req, res) {
   } catch (err) {
     console.error('❌ Error al actualizar estado:', err);
     res.status(500).json({ error: 'Error al actualizar estado' });
+  }
+}
+
+// 4b. Reprogramar orden
+async function reprogramarOrden(req, res) {
+  try {
+    const { id } = req.params;
+    const { fecha_programada } = req.body;
+
+    const { rowCount, rows } = await db.query(
+      `UPDATE ordenes_trabajo
+       SET fecha_programada = $1, estado = 'pendiente'
+       WHERE id = $2
+       RETURNING *`,
+      [fecha_programada, id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+
+    await crearLog({
+      usuario_id: 2, // temporal
+      accion: 'reprogramar_orden',
+      tabla: 'ordenes_trabajo',
+      registro_id: id,
+    });
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('❌ Error al reprogramar orden:', err);
+    res.status(500).json({ error: 'Error al reprogramar orden' });
   }
 }
 
@@ -636,6 +673,7 @@ module.exports = {
   obtenerOrden,
   crearNuevaOrden,
   cambiarEstado,
+  reprogramarOrden,
   detalleOrden,
   calendarizarMantenimientos,
   ejecutarOrden,
