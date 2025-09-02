@@ -1,5 +1,6 @@
 // src/components/calendar/EventModal.jsx
 import { useNavigate } from "react-router-dom";
+import { getRutaPorRol } from "../../utils/rutasPorRol";
 
 export default function EventModal({ evento, onClose }) {
   const navigate = useNavigate();
@@ -8,10 +9,10 @@ export default function EventModal({ evento, onClose }) {
 
   const esProyectado = evento.tipo === "proyectado";
   const user = JSON.parse(localStorage.getItem("user"));
-  const rolNombre = user?.rol_nombre?.toLowerCase() || "administrador";
+  const rolPath = getRutaPorRol(user?.rol_nombre);
 
   const handleGestionClick = () => {
-    navigate(`/${rolNombre}/gestion?equipo_id=${evento.equipo_id}`);
+    navigate(`${rolPath}/gestion?equipo_id=${evento.equipo_id}`);
   };
 
   return (
