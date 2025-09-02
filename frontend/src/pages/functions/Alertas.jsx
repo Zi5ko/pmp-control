@@ -51,7 +51,11 @@ const Alertas = () => {
                 return (
                   <tr key={alerta.id}>
                     <td className="px-4 py-3">{alerta.id}</td>
-                    <td className="px-4 py-3">{alerta.equipo_nombre || "Equipo no registrado"}</td>
+                    <td className="px-4 py-3">
+                      {alerta.equipo_nombre
+                        ? `${alerta.equipo_nombre} (ID ${alerta.equipo_id})`
+                        : "Equipo no registrado"}
+                    </td>
                     <td className="px-4 py-3">{alerta.ubicacion || "No especificada"}</td>
                     <td className="px-4 py-3 font-semibold">
                       {alerta.criticidad === "crítico" ? (

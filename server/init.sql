@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS tipos_alerta (
 -- Tabla: alertas
 CREATE TABLE IF NOT EXISTS alertas (
   id SERIAL PRIMARY KEY,
-  equipo_id INTEGER REFERENCES equipos(id),
+  orden_id INTEGER REFERENCES ordenes_trabajo(id),
   tipo_id INTEGER REFERENCES tipos_alerta(id),
   mensaje TEXT NOT NULL,
   leida BOOLEAN DEFAULT FALSE,
