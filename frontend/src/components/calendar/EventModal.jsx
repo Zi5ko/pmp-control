@@ -41,7 +41,7 @@ export default function EventModal({ evento, onClose }) {
     navigate(
       `${rolPath}/gestion?equipo_id=${evento.equipo_id}&fecha_anterior=${
         evento.start.toISOString().split("T")[0]
-      }`
+      }&orden_id=${evento.id}`
     );
   };
 
@@ -124,14 +124,17 @@ export default function EventModal({ evento, onClose }) {
             )}
           </div>
 
-          {!esProyectado && rol !== "tecnico" && rol !== "supervisor" && (
-            <button
-              className="mt-6 w-full bg-[#D0FF34] text-[#111A3A] font-semibold py-2 rounded shadow hover:bg-lime-300 text-sm"
-              onClick={() => setMostrarConfirmacion(true)}
-            >
-              Reprogramar este mantenimiento
-            </button>
-          )}
+          {!esProyectado &&
+            rol !== "tecnico" &&
+            rol !== "supervisor" &&
+            evento.estado?.toLowerCase() === "pendiente" && (
+              <button
+                className="mt-6 w-full bg-[#D0FF34] text-[#111A3A] font-semibold py-2 rounded shadow hover:bg-lime-300 text-sm"
+                onClick={() => setMostrarConfirmacion(true)}
+              >
+                Reprogramar este mantenimiento
+              </button>
+            )}
 
           {!esProyectado &&
             rol === "tecnico" &&
