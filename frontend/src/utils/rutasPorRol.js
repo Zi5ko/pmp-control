@@ -1,7 +1,12 @@
 // frontend/src/utils/rutasPorRol.js
 
 const normalizarRol = (rol) =>
-  rol.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  rol
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .trim();
 
 export const getRutaPorRol = (rolNombre) => {
   const rol = normalizarRol(rolNombre);
