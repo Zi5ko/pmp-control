@@ -47,6 +47,7 @@ exports.generarAlertas = async (req, res) => {
        WHERE a.leida = false AND NOT EXISTS (
          SELECT 1 FROM ordenes_trabajo o
          WHERE o.id = a.orden_id
+
            AND o.estado IN ('pendiente', 'realizada')
            AND o.fecha_programada <= $1
        )`,
@@ -71,6 +72,7 @@ exports.obtenerAlertas = async (req, res) => {
         a.generada_en,
         a.orden_id,
         e.id AS equipo_id,
+
         e.nombre AS equipo_nombre,
         e.ubicacion,
         e.criticidad,
@@ -78,6 +80,7 @@ exports.obtenerAlertas = async (req, res) => {
       FROM alertas a
       LEFT JOIN ordenes_trabajo o ON a.orden_id = o.id
       LEFT JOIN equipos e ON o.equipo_id = e.id
+
       LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
       ORDER BY a.generada_en DESC
     `);
