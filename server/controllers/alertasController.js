@@ -23,17 +23,17 @@ exports.generarAlertas = async (req, res) => {
     for (const orden of ordenesVencidas) {
       const yaExiste = await db.query(`
         SELECT 1 FROM alertas
-        WHERE equipo_id = $1 AND tipo_id = $2 AND leida = false
-      `, [orden.equipo_id, TIPO_ALERTA_FECHA_VENCIDA]);
+        WHERE orden_id = $1 AND tipo_id = $2 AND leida = false
+      `, [orden.orden_id, TIPO_ALERTA_FECHA_VENCIDA]);
 
       if (yaExiste.rowCount === 0) {
         const mensaje = `Orden pendiente desde ${orden.fecha_programada} para el equipo "${orden.equipo_nombre}"`;
 
         const insert = await db.query(`
-          INSERT INTO alertas (equipo_id, tipo_id, mensaje)
+          INSERT INTO alertas (orden_id, tipo_id, mensaje)
           VALUES ($1, $2, $3)
           RETURNING *
-        `, [orden.equipo_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
+        `, [orden.orden_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
 
         nuevasAlertas.push(insert.rows[0]);
       }
@@ -73,6 +73,7 @@ exports.obtenerAlertas = async (req, res) => {
         ta.nombre AS tipo_alerta
       FROM alertas a
       LEFT JOIN equipos e ON a.equipo_id = e.id
+
       LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
       ORDER BY a.generada_en DESC
     `);
