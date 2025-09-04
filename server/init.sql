@@ -65,7 +65,6 @@ ALTER TABLE IF EXISTS alertas
 ALTER TABLE IF EXISTS alertas
   DROP COLUMN IF EXISTS orden_id;
 
-
 CREATE TABLE IF NOT EXISTS alertas (
   id SERIAL PRIMARY KEY,
   orden_id INTEGER REFERENCES ordenes_trabajo(id),

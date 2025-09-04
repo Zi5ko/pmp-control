@@ -11,10 +11,11 @@ exports.generarAlertas = async (req, res) => {
     domingoAnterior.setDate(hoy.getDate() - hoy.getDay());
 
     const { rows: ordenesVencidas } = await db.query(`
-      SELECT o.id AS orden_id, o.equipo_id, e.nombre AS equipo_nombre, o.fecha_programada
+      SELECT o.equipo_id, e.nombre AS equipo_nombre, MIN(o.fecha_programada) AS fecha_programada
       FROM ordenes_trabajo o
       JOIN equipos e ON o.equipo_id = e.id
-      WHERE o.estado = 'pendiente' AND o.fecha_programada <= $1
+      WHERE o.estado IN ('pendiente', 'realizada') AND o.fecha_programada <= $1
+      GROUP BY o.equipo_id, e.nombre
     `, [domingoAnterior]);
 
     const nuevasAlertas = [];
@@ -38,6 +39,17 @@ exports.generarAlertas = async (req, res) => {
       }
     }
 
+    await db.query(
+      `DELETE FROM alertas a
+       WHERE a.leida = false AND NOT EXISTS (
+         SELECT 1 FROM ordenes_trabajo o
+         WHERE o.equipo_id = a.equipo_id
+           AND o.estado IN ('pendiente', 'realizada')
+           AND o.fecha_programada <= $1
+       )`,
+      [domingoAnterior]
+    );
+
     res.json({ generadas: nuevasAlertas.length, nuevasAlertas });
 
   } catch (err) {
@@ -55,7 +67,6 @@ exports.obtenerAlertas = async (req, res) => {
         a.leida,
         a.generada_en,
         a.equipo_id,
-
         e.nombre AS equipo_nombre,
         e.ubicacion,
         e.criticidad,

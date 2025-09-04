@@ -1,6 +1,6 @@
 // frontend/src/pages/functions/Alertas.jsx
 import { useEffect, useState } from 'react';
-import { obtenerAlertas } from '../../services/alertasService';
+import { obtenerAlertas, generarAlertas } from '../../services/alertasService';
 
 const Alertas = () => {
   const [alertas, setAlertas] = useState([]);
@@ -8,6 +8,7 @@ const Alertas = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        await generarAlertas();
         const data = await obtenerAlertas();
         setAlertas(data);
       } catch (error) {
