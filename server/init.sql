@@ -59,14 +59,25 @@ CREATE TABLE IF NOT EXISTS tipos_alerta (
 );
 
 -- Tabla: alertas
+-- Asegurar que la tabla de alertas esté alineada con el nuevo esquema
+ALTER TABLE IF EXISTS alertas
+  ADD COLUMN IF NOT EXISTS orden_id INTEGER REFERENCES ordenes_trabajo(id);
+
+ALTER TABLE IF EXISTS alertas
+  DROP COLUMN IF EXISTS equipo_id;
+
 CREATE TABLE IF NOT EXISTS alertas (
   id SERIAL PRIMARY KEY,
-  equipo_id INTEGER REFERENCES equipos(id),
+  orden_id INTEGER REFERENCES ordenes_trabajo(id),
   tipo_id INTEGER REFERENCES tipos_alerta(id),
   mensaje TEXT NOT NULL,
   leida BOOLEAN DEFAULT FALSE,
   generada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS alertas_orden_tipo_unq
+  ON alertas (orden_id, tipo_id)
+  WHERE leida = FALSE;
 
 -- Tabla: evidencias
 CREATE TABLE IF NOT EXISTS evidencias (
