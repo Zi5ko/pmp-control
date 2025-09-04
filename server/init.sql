@@ -58,13 +58,13 @@ CREATE TABLE IF NOT EXISTS tipos_alerta (
   descripcion TEXT
 );
 
--- Tabla: alertas
--- Asegurar que la tabla de alertas esté alineada con el nuevo esquema
+-- Asegurar que la tabla de alertas utilice equipo_id
 ALTER TABLE IF EXISTS alertas
-  ADD COLUMN IF NOT EXISTS orden_id INTEGER REFERENCES ordenes_trabajo(id);
+  ADD COLUMN IF NOT EXISTS equipo_id INTEGER REFERENCES equipos(id);
 
 ALTER TABLE IF EXISTS alertas
-  DROP COLUMN IF EXISTS equipo_id;
+  DROP COLUMN IF EXISTS orden_id;
+
 
 CREATE TABLE IF NOT EXISTS alertas (
   id SERIAL PRIMARY KEY,
@@ -75,8 +75,8 @@ CREATE TABLE IF NOT EXISTS alertas (
   generada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS alertas_orden_tipo_unq
-  ON alertas (orden_id, tipo_id)
+CREATE UNIQUE INDEX IF NOT EXISTS alertas_equipo_tipo_unq
+  ON alertas (equipo_id, tipo_id)
   WHERE leida = FALSE;
 
 -- Tabla: evidencias

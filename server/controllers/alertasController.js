@@ -54,15 +54,15 @@ exports.obtenerAlertas = async (req, res) => {
         a.mensaje,
         a.leida,
         a.generada_en,
-        o.id AS orden_id,
-        e.id AS equipo_id,
+        a.equipo_id,
+
         e.nombre AS equipo_nombre,
         e.ubicacion,
         e.criticidad,
         ta.nombre AS tipo_alerta
       FROM alertas a
-      LEFT JOIN ordenes_trabajo o ON a.orden_id = o.id
-      LEFT JOIN equipos e ON o.equipo_id = e.id
+      LEFT JOIN equipos e ON a.equipo_id = e.id
+
       LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
       ORDER BY a.generada_en DESC
     `);
@@ -73,4 +73,3 @@ exports.obtenerAlertas = async (req, res) => {
     res.status(500).json({ error: "Error al obtener alertas" });
   }
 };
-
