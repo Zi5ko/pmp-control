@@ -1,6 +1,7 @@
 // frontend/src/pages/functions/Auditoria.jsx
 import { useEffect, useState } from "react";
 import { obtenerLogs } from "../../services/logsService";
+import { getHistorialOrdenes } from "../../services/ordenesServices";
 
 const Auditoria = () => {
   const [logs, setLogs] = useState([]);
@@ -8,8 +9,15 @@ const Auditoria = () => {
   const [filtroTabla, setFiltroTabla] = useState("");
   const [filtroFecha, setFiltroFecha] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
+  const [ordenes, setOrdenes] = useState([]);
+  const [filtroEquipo, setFiltroEquipo] = useState("");
+  const [filtroIdEquipo, setFiltroIdEquipo] = useState("");
+  const [filtroOt, setFiltroOt] = useState("");
+  const [filtroFechaOt, setFiltroFechaOt] = useState("");
+  const [paginaHistorial, setPaginaHistorial] = useState(1);
 
   const registrosPorPagina = 15;
+  const registrosHistorialPorPagina = 5;
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -20,7 +28,16 @@ const Auditoria = () => {
         console.error("Error al cargar logs:", err);
       }
     };
+    const fetchHistorial = async () => {
+      try {
+        const data = await getHistorialOrdenes();
+        setOrdenes(data);
+      } catch (error) {
+        console.error("Error al cargar historial en auditoría:", error);
+      }
+    };
     fetchLogs();
+    fetchHistorial();
   }, []);
 
   const usuariosUnicos = [...new Set(logs.map(log => log.usuario).filter(Boolean))];
@@ -53,6 +70,42 @@ const Auditoria = () => {
   useEffect(() => {
     setPaginaActual(1);
   }, [filtroUsuario, filtroTabla, filtroFecha]);
+
+  const ordenesFiltradas = ordenes.filter((orden) => {
+    const nombreCoincide = filtroEquipo
+      ? orden.equipo_nombre?.toLowerCase().includes(filtroEquipo.toLowerCase())
+      : true;
+    const idCoincide = filtroIdEquipo
+      ? String(orden.equipo_id).includes(filtroIdEquipo)
+      : true;
+    const otCoincide = filtroOt ? String(orden.id).includes(filtroOt) : true;
+    const fechaCoincide = filtroFechaOt
+      ? orden.fecha_ejecucion?.slice(0, 10) === filtroFechaOt
+      : true;
+    return nombreCoincide && idCoincide && otCoincide && fechaCoincide;
+  });
+
+  const totalPaginasHistorial = Math.ceil(
+    ordenesFiltradas.length / registrosHistorialPorPagina
+  );
+
+  const ordenesPaginadas = ordenesFiltradas.slice(
+    (paginaHistorial - 1) * registrosHistorialPorPagina,
+    paginaHistorial * registrosHistorialPorPagina
+  );
+
+  const avanzarPaginaHistorial = () => {
+    if (paginaHistorial < totalPaginasHistorial)
+      setPaginaHistorial(paginaHistorial + 1);
+  };
+
+  const retrocederPaginaHistorial = () => {
+    if (paginaHistorial > 1) setPaginaHistorial(paginaHistorial - 1);
+  };
+
+  useEffect(() => {
+    setPaginaHistorial(1);
+  }, [filtroEquipo, filtroIdEquipo, filtroOt, filtroFechaOt]);
 
   return (
     <div className="p-6 flex flex-col min-h-screen">
@@ -133,8 +186,8 @@ const Auditoria = () => {
         </ul>
       )}
 
-      {/* Paginación fija */}
-      <div className="mt-auto pt-6 flex justify-end gap-4">
+      {/* Paginación de logs */}
+      <div className="mt-4 flex justify-end gap-4">
         <button
           onClick={retrocederPagina}
           disabled={paginaActual === 1}
@@ -149,6 +202,100 @@ const Auditoria = () => {
         >
           Siguiente
         </button>
+      </div>
+
+      {/* Historial técnico */}
+      <div className="mt-10">
+        <h2 className="text-xl text-[#111A3A] mb-4">Historial técnico</h2>
+        <div className="flex flex-wrap gap-4 mb-4 text-sm">
+          <input
+            type="text"
+            placeholder="Nombre del equipo"
+            value={filtroEquipo}
+            onChange={(e) => setFiltroEquipo(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-1"
+          />
+          <input
+            type="text"
+            placeholder="ID de equipo"
+            value={filtroIdEquipo}
+            onChange={(e) => setFiltroIdEquipo(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-1"
+          />
+          <input
+            type="text"
+            placeholder="Número OT"
+            value={filtroOt}
+            onChange={(e) => setFiltroOt(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-1"
+          />
+          <input
+            type="date"
+            value={filtroFechaOt}
+            onChange={(e) => setFiltroFechaOt(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-1"
+          />
+        </div>
+
+        {ordenesFiltradas.length === 0 ? (
+          <p className="text-sm text-gray-500">No hay órdenes que coincidan con el filtro.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg shadow">
+              <thead className="text-left text-sm text-gray-700">
+                <tr>
+                  <th className="px-4 py-2">OT</th>
+                  <th className="px-4 py-2">ID Equipo</th>
+                  <th className="px-4 py-2">Nombre</th>
+                  <th className="px-4 py-2">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm text-gray-600">
+                {ordenesPaginadas.map((orden) => (
+                  <tr key={orden.id} className="border-t">
+                    <td className="px-4 py-2">
+                      {`OT${String(orden.id).padStart(4, "0")}`}
+                    </td>
+                    <td className="px-4 py-2">
+                      {`ID${String(orden.equipo_id).padStart(4, "0")}`}
+                    </td>
+                    <td className="px-4 py-2">{orden.equipo_nombre}</td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`px-2 py-1 rounded-md text-xs font-bold tracking-wide ${
+                          orden.estado === "firmada"
+                            ? "bg-indigo-600 text-white"
+                            : orden.estado === "validada"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-400 text-white"
+                        }`}
+                      >
+                        {orden.estado?.toUpperCase()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="mt-4 flex justify-end gap-4">
+          <button
+            onClick={retrocederPaginaHistorial}
+            disabled={paginaHistorial === 1}
+            className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <button
+            onClick={avanzarPaginaHistorial}
+            disabled={paginaHistorial >= totalPaginasHistorial}
+            className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
   );
