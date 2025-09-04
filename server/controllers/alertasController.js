@@ -11,10 +11,14 @@ exports.generarAlertas = async (req, res) => {
     domingoAnterior.setDate(hoy.getDate() - hoy.getDay());
 
     const { rows: ordenesVencidas } = await db.query(`
-      SELECT o.id AS orden_id, o.equipo_id, e.nombre AS equipo_nombre, o.fecha_programada
+      SELECT o.id AS orden_id,
+             o.equipo_id,
+             e.nombre AS equipo_nombre,
+             o.fecha_programada
       FROM ordenes_trabajo o
       JOIN equipos e ON o.equipo_id = e.id
-      WHERE o.estado = 'pendiente' AND o.fecha_programada <= $1
+      WHERE o.estado IN ('pendiente', 'realizada')
+        AND o.fecha_programada <= $1
     `, [domingoAnterior]);
 
     const nuevasAlertas = [];
@@ -22,21 +26,32 @@ exports.generarAlertas = async (req, res) => {
     for (const orden of ordenesVencidas) {
       const yaExiste = await db.query(`
         SELECT 1 FROM alertas
-        WHERE equipo_id = $1 AND tipo_id = $2 AND leida = false
-      `, [orden.equipo_id, TIPO_ALERTA_FECHA_VENCIDA]);
+        WHERE orden_id = $1 AND tipo_id = $2 AND leida = false
+      `, [orden.orden_id, TIPO_ALERTA_FECHA_VENCIDA]);
 
       if (yaExiste.rowCount === 0) {
         const mensaje = `Orden pendiente desde ${orden.fecha_programada} para el equipo "${orden.equipo_nombre}"`;
 
         const insert = await db.query(`
-          INSERT INTO alertas (equipo_id, tipo_id, mensaje)
+          INSERT INTO alertas (orden_id, tipo_id, mensaje)
           VALUES ($1, $2, $3)
           RETURNING *
-        `, [orden.equipo_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
+        `, [orden.orden_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
 
         nuevasAlertas.push(insert.rows[0]);
       }
     }
+
+    await db.query(
+      `DELETE FROM alertas a
+       WHERE a.leida = false AND NOT EXISTS (
+         SELECT 1 FROM ordenes_trabajo o
+         WHERE o.id = a.orden_id
+           AND o.estado IN ('pendiente', 'realizada')
+           AND o.fecha_programada <= $1
+       )`,
+      [domingoAnterior]
+    );
 
     res.json({ generadas: nuevasAlertas.length, nuevasAlertas });
 
@@ -47,24 +62,29 @@ exports.generarAlertas = async (req, res) => {
 };
 
 exports.obtenerAlertas = async (req, res) => {
-    try {
-      const { rows } = await db.query(`
-        SELECT 
-          a.id,
-          a.mensaje,
-          a.leida,
-          a.generada_en,
-          e.nombre AS equipo_nombre,
-          ta.nombre AS tipo_alerta
-        FROM alertas a
-        LEFT JOIN equipos e ON a.equipo_id = e.id
-        LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
-        ORDER BY a.generada_en DESC
-      `);
-  
-      res.json(rows);
-    } catch (error) {
-      console.error("❌ Error al obtener alertas:", error);
-      res.status(500).json({ error: "Error al obtener alertas" });
-    }
-  };
+  try {
+    const { rows } = await db.query(`
+      SELECT
+        a.id,
+        a.mensaje,
+        a.leida,
+        a.generada_en,
+        a.orden_id,
+        e.id AS equipo_id,
+        e.nombre AS equipo_nombre,
+        e.ubicacion,
+        e.criticidad,
+        ta.nombre AS tipo_alerta
+      FROM alertas a
+      LEFT JOIN ordenes_trabajo o ON a.orden_id = o.id
+      LEFT JOIN equipos e ON o.equipo_id = e.id
+      LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
+      ORDER BY a.generada_en DESC
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error al obtener alertas:", error);
+    res.status(500).json({ error: "Error al obtener alertas" });
+  }
+};
