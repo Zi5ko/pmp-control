@@ -11,10 +11,11 @@ exports.generarAlertas = async (req, res) => {
     domingoAnterior.setDate(hoy.getDate() - hoy.getDay());
 
     const { rows: ordenesVencidas } = await db.query(`
-      SELECT o.id AS orden_id, o.equipo_id, e.nombre AS equipo_nombre, o.fecha_programada
+      SELECT o.equipo_id, e.nombre AS equipo_nombre, MIN(o.fecha_programada) AS fecha_programada
       FROM ordenes_trabajo o
       JOIN equipos e ON o.equipo_id = e.id
-      WHERE o.estado = 'pendiente' AND o.fecha_programada <= $1
+      WHERE o.estado IN ('pendiente', 'realizada') AND o.fecha_programada <= $1
+      GROUP BY o.equipo_id, e.nombre
     `, [domingoAnterior]);
 
     const nuevasAlertas = [];
@@ -38,6 +39,17 @@ exports.generarAlertas = async (req, res) => {
       }
     }
 
+    await db.query(
+      `DELETE FROM alertas a
+       WHERE a.leida = false AND NOT EXISTS (
+         SELECT 1 FROM ordenes_trabajo o
+         WHERE o.equipo_id = a.equipo_id
+           AND o.estado IN ('pendiente', 'realizada')
+           AND o.fecha_programada <= $1
+       )`,
+      [domingoAnterior]
+    );
+
     res.json({ generadas: nuevasAlertas.length, nuevasAlertas });
 
   } catch (err) {
@@ -47,24 +59,27 @@ exports.generarAlertas = async (req, res) => {
 };
 
 exports.obtenerAlertas = async (req, res) => {
-    try {
-      const { rows } = await db.query(`
-        SELECT 
-          a.id,
-          a.mensaje,
-          a.leida,
-          a.generada_en,
-          e.nombre AS equipo_nombre,
-          ta.nombre AS tipo_alerta
-        FROM alertas a
-        LEFT JOIN equipos e ON a.equipo_id = e.id
-        LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
-        ORDER BY a.generada_en DESC
-      `);
-  
-      res.json(rows);
-    } catch (error) {
-      console.error("❌ Error al obtener alertas:", error);
-      res.status(500).json({ error: "Error al obtener alertas" });
-    }
-  };
+  try {
+    const { rows } = await db.query(`
+      SELECT
+        a.id,
+        a.mensaje,
+        a.leida,
+        a.generada_en,
+        a.equipo_id,
+        e.nombre AS equipo_nombre,
+        e.ubicacion,
+        e.criticidad,
+        ta.nombre AS tipo_alerta
+      FROM alertas a
+      LEFT JOIN equipos e ON a.equipo_id = e.id
+      LEFT JOIN tipos_alerta ta ON a.tipo_id = ta.id
+      ORDER BY a.generada_en DESC
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error al obtener alertas:", error);
+    res.status(500).json({ error: "Error al obtener alertas" });
+  }
+};
