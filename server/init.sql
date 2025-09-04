@@ -58,7 +58,13 @@ CREATE TABLE IF NOT EXISTS tipos_alerta (
   descripcion TEXT
 );
 
--- Tabla: alertas
+-- Asegurar que la tabla de alertas utilice equipo_id
+ALTER TABLE IF EXISTS alertas
+  ADD COLUMN IF NOT EXISTS equipo_id INTEGER REFERENCES equipos(id);
+
+ALTER TABLE IF EXISTS alertas
+  DROP COLUMN IF EXISTS orden_id;
+
 CREATE TABLE IF NOT EXISTS alertas (
   id SERIAL PRIMARY KEY,
   equipo_id INTEGER REFERENCES equipos(id),
@@ -67,6 +73,10 @@ CREATE TABLE IF NOT EXISTS alertas (
   leida BOOLEAN DEFAULT FALSE,
   generada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS alertas_equipo_tipo_unq
+  ON alertas (equipo_id, tipo_id)
+  WHERE leida = FALSE;
 
 -- Tabla: evidencias
 CREATE TABLE IF NOT EXISTS evidencias (
