@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getHistorialOrdenes } from "../../services/ordenesServices";
 import { descargarReportePDF } from "../../services/reportesService";
+import { descargarEvidencia } from "../../services/evidenciasService";
 import {
   FileText,
   Image,
@@ -47,14 +48,24 @@ export default function HistorialTecnico() {
     return <FileText className="w-4 h-4" />;
   };
 
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-
   const handleDescargarPDF = async (ordenId) => {
     try {
       const nombreArchivo = `reporte_orden_${ordenId}.pdf`;
       await descargarReportePDF(nombreArchivo);
     } catch (err) {
       alert("No se pudo descargar el PDF.");
+    }
+  };
+
+  const handleVerEvidencia = async (ruta) => {
+    try {
+      const blob = await descargarEvidencia(ruta);
+      const fileUrl = URL.createObjectURL(blob);
+      window.open(fileUrl, "_blank");
+      URL.revokeObjectURL(fileUrl);
+    } catch (err) {
+      console.error("Error al abrir evidencia:", err);
+      alert("No se pudo abrir la evidencia.");
     }
   };
 
@@ -100,21 +111,16 @@ export default function HistorialTecnico() {
                 <div className="mt-2">
                   <p className="font-semibold text-sm mb-1">Evidencias:</p>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    {orden.evidencias.map((ev, idx) => {
-                      const url = ev.url.startsWith("/") ? ev.url : `/${ev.url}`;
-                      return (
-                        <li key={idx} className="flex items-center gap-2">
-                          <a
-                            href={`${baseUrl}/uploads/${ev.url.replace(/^\/|^uploads\//, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline flex items-center gap-1"
-                          >
-                            {getFileIcon(ev.tipo)} Evidencia {idx + 1}
-                          </a>
-                        </li>
-                      );
-                    })}
+                    {orden.evidencias.map((ev, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleVerEvidencia(ev.url)}
+                          className="text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          {getFileIcon(ev.tipo)} Evidencia {idx + 1}
+                        </button>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               ) : (
