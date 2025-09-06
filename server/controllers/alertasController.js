@@ -6,59 +6,88 @@ const TIPO_ALERTA_FECHA_VENCIDA = 1;
 
 exports.generarAlertas = async (req, res) => {
   try {
+    // Domingo anterior (00:00) como corte
     const hoy = new Date();
-    const domingoAnterior = new Date();
+    const domingoAnterior = new Date(hoy);
+    domingoAnterior.setHours(0, 0, 0, 0);
     domingoAnterior.setDate(hoy.getDate() - hoy.getDay());
 
-    const { rows: ordenesVencidas } = await db.query(`
-      SELECT o.id AS orden_id,
-             o.equipo_id,
-             e.nombre AS equipo_nombre,
-             o.fecha_programada
+    // 1) Candidatas: OTs vencidas (pendiente/realizada) con fecha <= domingoAnterior
+    const { rows: candidatas } = await db.query(`
+      SELECT 
+        o.id                  AS ot_id,
+        o.equipo_id,
+        e.nombre              AS equipo_nombre,
+        o.fecha_programada::date AS fecha_prog
       FROM ordenes_trabajo o
-      JOIN equipos e ON o.equipo_id = e.id
-      WHERE o.estado IN ('pendiente', 'realizada')
-        AND o.fecha_programada <= $1
+      JOIN equipos e ON e.id = o.equipo_id
+      WHERE o.estado IN ('pendiente','realizada')
+        AND o.fecha_programada::date <= $1::date
     `, [domingoAnterior]);
 
     const nuevasAlertas = [];
+    let insertadas = 0;
 
-    for (const orden of ordenesVencidas) {
-      const yaExiste = await db.query(`
-        SELECT 1 FROM alertas
-        WHERE orden_id = $1 AND tipo_id = $2 AND leida = false
-      `, [orden.orden_id, TIPO_ALERTA_FECHA_VENCIDA]);
+    // 2) Insertar evitando duplicados (misma alerta, mismo día)
+    for (const c of candidatas) {
+      const mensaje = `Orden pendiente desde ${c.fecha_prog} para el equipo "${c.equipo_nombre}"`;
 
-      if (yaExiste.rowCount === 0) {
-        const mensaje = `Orden pendiente desde ${orden.fecha_programada} para el equipo "${orden.equipo_nombre}"`;
+      // Evita duplicar alertas iguales el mismo día
+      const noExisteHoy = await db.query(`
+        SELECT 1 
+        FROM alertas 
+        WHERE equipo_id = $1 
+          AND tipo_id   = $2
+          AND mensaje   = $3
+          AND DATE(generada_en) = CURRENT_DATE
+      `, [c.equipo_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
 
-        const insert = await db.query(`
-          INSERT INTO alertas (orden_id, tipo_id, mensaje)
-          VALUES ($1, $2, $3)
-          RETURNING *
-        `, [orden.orden_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
+      if (noExisteHoy.rowCount === 0) {
+        const ins = await db.query(`
+          INSERT INTO alertas (equipo_id, tipo_id, mensaje, leida, generada_en)
+          VALUES ($1, $2, $3, false, NOW())
+          RETURNING equipo_id, tipo_id, mensaje, leida, generada_en
+        `, [c.equipo_id, TIPO_ALERTA_FECHA_VENCIDA, mensaje]);
 
-        nuevasAlertas.push(insert.rows[0]);
+        nuevasAlertas.push(ins.rows[0]);
+        insertadas++;
       }
     }
 
-    await db.query(
-      `DELETE FROM alertas a
-       WHERE a.leida = false AND NOT EXISTS (
-         SELECT 1 FROM ordenes_trabajo o
-         WHERE o.id = a.orden_id
+    // 3) Limpieza: quita alertas no leídas generadas HOY que ya no apliquen
+    // (sin usar orden_id; se compara contra el conjunto actual de candidatas)
+    await db.query(`
+      DELETE FROM alertas a
+      WHERE a.leida = false
+        AND DATE(a.generada_en) = CURRENT_DATE
+        AND NOT EXISTS (
+          SELECT 1
+          FROM (
+            SELECT 
+              o.equipo_id,
+              1 AS tipo_id,
+              concat('Orden pendiente desde ', o.fecha_programada::date, ' para el equipo "', e.nombre, '"') AS mensaje
+            FROM ordenes_trabajo o
+            JOIN equipos e ON e.id = o.equipo_id
+            WHERE o.estado IN ('pendiente','realizada')
+              AND o.fecha_programada::date <= $1::date
+          ) cand
+          WHERE cand.equipo_id = a.equipo_id
+            AND cand.tipo_id   = a.tipo_id
+            AND cand.mensaje   = a.mensaje
+        )
+    `, [domingoAnterior]);
 
-           AND o.estado IN ('pendiente', 'realizada')
-           AND o.fecha_programada <= $1
-       )`,
-      [domingoAnterior]
-    );
-
-    res.json({ generadas: nuevasAlertas.length, nuevasAlertas });
+    return res.status(200).json({
+      ok: true,
+      total_detectadas: candidatas.length,
+      insertadas,
+      nuevasAlertas
+    });
 
   } catch (err) {
     console.error("❌ Error al generar alertas:", err);
-    res.status(500).json({ error: "Error al generar alertas" });
+    return res.status(500).json({ ok: false, error: "Error al generar alertas" });
   }
 };
 
