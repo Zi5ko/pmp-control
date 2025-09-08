@@ -50,8 +50,8 @@ export default function RegistrosYFirmas() {
         setMensaje({ tipo: "success", texto: "Reporte generado correctamente." });
   
         // Mostrar el PDF en nueva pestaña
-        const baseUrl = import.meta.env.VITE_BACKEND_URL;
-        window.open(`${baseUrl}${pdfRespuesta.url}`, "_blank");
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+        window.open(`${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`, "_blank");
   
         // Limpiar estados
         setFirmaServicio(null);
