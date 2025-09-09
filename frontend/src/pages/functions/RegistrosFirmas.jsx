@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getOrdenesValidadas, generarPDF, descargarReportePDF } from "../../services/reportesService";
 import FirmaDibujo from "../../components/FirmaDibujo";
-import { Download } from "lucide-react";
+import { Download, XCircle } from "lucide-react";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 
@@ -12,11 +12,21 @@ const formatearOT = (id) => `OT${String(id).padStart(4, "0")}`;
 export default function RegistrosYFirmas() {
   const [ordenes, setOrdenes] = useState([]);
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
+  const [ordenDetalle, setOrdenDetalle] = useState(null);
   const [firmaServicio, setFirmaServicio] = useState(null);
   const [firmaTecnico, setFirmaTecnico] = useState(null);
   const [generando, setGenerando] = useState(false);
   const [archivoGenerado, setArchivoGenerado] = useState(null);
   const [mensaje, setMensaje] = useState(null);
+
+  const extraerDetalle = (texto = "") => {
+    const tareasMatch = texto.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
+    const observacionesMatch = texto.match(/Observaciones:\n([\s\S]*)/);
+    return {
+      tareas: tareasMatch ? tareasMatch[1].trim() : "Sin tareas registradas.",
+      observaciones: observacionesMatch ? observacionesMatch[1].trim() : "Sin observaciones.",
+    };
+  };
 
   const fetchOrdenes = async () => {
     try {
@@ -78,6 +88,8 @@ export default function RegistrosYFirmas() {
     }
   };
 
+  const detalle = ordenDetalle ? extraerDetalle(ordenDetalle.observaciones || "") : null;
+
   return (
     <div className="p-6">
       {mensaje?.tipo === "success" && (
@@ -101,6 +113,7 @@ export default function RegistrosYFirmas() {
                 <th className="px-4 py-2">Equipo</th>
                 <th className="px-4 py-2">Ubicación</th>
                 <th className="px-4 py-2">Fecha</th>
+                <th className="px-4 py-2">Detalle</th>
               </tr>
             </thead>
             <tbody>
@@ -122,6 +135,17 @@ export default function RegistrosYFirmas() {
                   <td className="px-4 py-2">{orden.equipo_nombre}</td>
                   <td className="px-4 py-2">{orden.ubicacion}</td>
                   <td className="px-4 py-2">{new Date(orden.fecha_ejecucion).toLocaleDateString("es-CL")}</td>
+                  <td className="px-4 py-2 text-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOrdenDetalle(orden);
+                      }}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Ver
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -136,12 +160,22 @@ export default function RegistrosYFirmas() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-1">Firma usuario servicio clínico</label>
-                <FirmaDibujo onSave={setFirmaServicio} />
+                <FirmaDibujo
+                  onSave={(data) => {
+                    setFirmaServicio(data);
+                    if (data) setMensaje({ tipo: "success", texto: "Firma guardada correctamente." });
+                  }}
+                />
               </div>
 
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-1">Tu firma (técnico)</label>
-                <FirmaDibujo onSave={setFirmaTecnico} />
+                <FirmaDibujo
+                  onSave={(data) => {
+                    setFirmaTecnico(data);
+                    if (data) setMensaje({ tipo: "success", texto: "Firma guardada correctamente." });
+                  }}
+                />
               </div>
 
               <div className="flex justify-center gap-3">
@@ -169,6 +203,28 @@ export default function RegistrosYFirmas() {
           )}
         </div>
       </div>
+
+      {detalle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-4 right-4 text-[#111A3A] hover:text-gray-600"
+              onClick={() => setOrdenDetalle(null)}
+            >
+              <XCircle size={20} />
+            </button>
+            <h2 className="text-lg font-bold text-[#111A3A] mb-4">Detalles de la orden</h2>
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">Tareas realizadas</h3>
+              <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.tareas}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">Observaciones</h3>
+              <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.observaciones}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
