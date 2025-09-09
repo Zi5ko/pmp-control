@@ -69,7 +69,7 @@ export default function RegistrosYFirmas() {
         const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
         const rutaFinal = pdfRespuesta.url;
         window.open(
-          `${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`,
+          `${baseUrl}/${rutaFinal.replace(/^\/|^uploads\//, "")}`,
           "_blank"
         );
   
