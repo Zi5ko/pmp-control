@@ -22,9 +22,11 @@ async function subirEvidencia(req, res) {
     const usuario_id = req.user.sub; // desde el JWT
 
     // Registro en base de datos
+    const relativePath = path.join('evidencias', archivo.filename).replace(/\\/g, '/');
+
     const evidencia = await agregarEvidencia({
       orden_id,
-      url: archivo.filename,     // se guarda solo el nombre, no la ruta
+      url: relativePath,
       tipo: extension,
       subido_por: usuario_id
     });
