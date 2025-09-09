@@ -17,26 +17,4 @@ function verifyToken(req, res, next) {
     return res.status(401).json({ error: 'Token inválido' });
   }
 }
-
-// Middleware para proteger acceso a archivos subidos
-function authUploads(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).send('Acceso no autorizado: falta token');
-  }
-
-  const token = authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(401).send('Token no proporcionado');
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // si lo necesitas en la lógica
-    next();
-  } catch (err) {
-    return res.status(401).send('Token inválido');
-  }
-}
-
-module.exports = { verifyToken, authUploads };
+module.exports = { verifyToken };

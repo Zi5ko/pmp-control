@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { subirEvidencia } = require('../controllers/evidenciasController');
+const { subirEvidencia, listarEvidencias } = require('../controllers/evidenciasController');
 const { verifyToken } = require('../middlewares/auth');
 
 // Carpeta de destino
@@ -39,6 +39,9 @@ router.post('/', verifyToken, upload.single('archivo'), subirEvidencia);
 
 // Ruta para descargar reportes PDF
 const { descargarPDF } = require('../controllers/reportesController');
-router.get('/descargar/:nombreArchivo', verifyToken, descargarPDF);
+router.get('/descargar/:nombreArchivo', descargarPDF);
+
+// Listar evidencias de una orden
+router.get('/:ordenId', verifyToken, listarEvidencias);
 
 module.exports = router;
