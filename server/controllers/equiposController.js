@@ -5,6 +5,7 @@ const db = require("../db");
 exports.registrarEquipo = async (req, res) => {
   const { familia, criticidad, ubicacion, marca, modelo, serie, plan_id } = req.body;
   const nombre = `${familia} ${marca} ${modelo}`;
+  const fecha_ingreso = new Date().toISOString().split("T")[0];
 
   try {
     const existe = await db.query(`
@@ -17,10 +18,10 @@ exports.registrarEquipo = async (req, res) => {
     }
 
     const result = await db.query(`
-      INSERT INTO equipos (nombre, familia, criticidad, ubicacion, marca, modelo, serie, plan_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO equipos (nombre, familia, criticidad, ubicacion, marca, modelo, serie, fecha_ingreso, plan_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *`,
-      [nombre, familia, criticidad, ubicacion, marca, modelo, serie, plan_id]);
+      [nombre, familia, criticidad, ubicacion, marca, modelo, serie, fecha_ingreso, plan_id]);
 
     return res.status(201).json(result.rows[0]);
   } catch (err) {
