@@ -89,7 +89,7 @@ export default function ValidarOrdenes() {
   );
 
   return (
-    
+    <>
       <div className="p-6">
       {mensaje?.tipo === "success" && (
         <SuccessBanner
@@ -234,6 +234,6 @@ export default function ValidarOrdenes() {
           onClose={() => setOrdenDetalle(null)}
         />
       )}
-    </div>
+    </>
   );
 }
