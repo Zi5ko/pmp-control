@@ -22,7 +22,8 @@ export default function ListaEquipos() {
 
   useEffect(() => {
     const rolId = Number(user?.rol_id);
-    if (!user || ![1, 6].includes(rolId)) {
+    // Permitir acceso para Admin(1), ESMP(6) y Calidad(4)
+    if (!user || ![1, 4, 6].includes(rolId)) {
       navigate("/no-autorizado");
     }
   }, [navigate, user]);
@@ -193,12 +194,15 @@ export default function ListaEquipos() {
 
         {/* Botón a la derecha */}
         <div className="ml-auto">
-          <button
-            onClick={() => navigate(`${basePath}/equipos`)}
-            className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:opacity-90"
-          >
-            Ingresar equipo
-          </button>
+          {/* Solo roles con permiso de registro pueden ver el botón */}
+          {([1, 6].includes(Number(user?.rol_id))) && (
+            <button
+              onClick={() => navigate(`${basePath}/equipos`)}
+              className="bg-[#D0FF34] text-[#111A3A] font-semibold px-6 py-2 rounded shadow hover:opacity-90"
+            >
+              Ingresar equipo
+            </button>
+          )}
         </div>
       </div>
 
