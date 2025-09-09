@@ -5,7 +5,7 @@ import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 import MiniCalendar from "../../components/MiniCalendar";
 
-const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
+const formatearCodigo = (prefijo, id) => `${prefijo}${String(id).padStart(4, "0")}`;
 
 export default function AsignarOrdenes() {
   const [ordenes, setOrdenes] = useState([]);
@@ -138,7 +138,9 @@ export default function AsignarOrdenes() {
                   />
                 </th>
                 <th className="p-3">ID</th>
+                <th className="p-3">OT</th>
                 <th className="p-3">Equipo</th>
+                <th className="p-3">Serie</th>
                 <th className="p-3">Ubicación</th>
                 <th className="p-3">Fecha Programada</th>
               </tr>
@@ -153,8 +155,10 @@ export default function AsignarOrdenes() {
                       onChange={() => toggleSeleccion(orden.id)}
                     />
                   </td>
-                  <td className="p-3 text-sm text-gray-800">{formatearID(orden.id)}</td>
+                  <td className="p-3 text-sm text-gray-800">{formatearCodigo("ID", orden.equipo_id)}</td>
+                  <td className="p-3 text-sm text-gray-800">{formatearCodigo("OT", orden.id)}</td>
                   <td className="p-3 text-sm text-gray-600">{orden.equipo_nombre}</td>
+                  <td className="p-3 text-sm text-gray-600">{orden.equipo_serie}</td>
                   <td className="p-3 text-sm text-gray-600">{orden.ubicacion}</td>
                   <td className="p-3 text-sm text-gray-600">{new Date(orden.fecha_programada).toLocaleDateString("es-CL")}</td>
                 </tr>
