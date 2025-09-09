@@ -104,7 +104,9 @@ async function validarOrdenTrabajo(id, validada, comentario, supervisor_id) {
     `
     UPDATE ordenes_trabajo
     SET estado = $1,
-        observaciones = COALESCE(observaciones, '{}'::jsonb) || jsonb_build_object('comentarios_supervisor', $2)
+        observaciones =
+          COALESCE(observaciones, '{}'::jsonb) ||
+          jsonb_build_object('comentarios_supervisor', $2::text)
     WHERE id = $3
     RETURNING *
   `,
