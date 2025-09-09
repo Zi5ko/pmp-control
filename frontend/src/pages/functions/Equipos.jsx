@@ -14,6 +14,7 @@ export default function Equipos() {
     familia: "",
     marca: "",
     modelo: "",
+    serie: "",
     criticidad: opcionesCriticidad[0],
     ubicacion: "",
     plan_id: ""
@@ -54,6 +55,7 @@ export default function Equipos() {
         familia: "",
         marca: "",
         modelo: "",
+        serie: "",
         criticidad: opcionesCriticidad[0],
         ubicacion: "",
         plan_id: ""
@@ -98,6 +100,18 @@ export default function Equipos() {
             type="text"
             name="modelo"
             value={form.modelo}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Serie</label>
+          <input
+            type="text"
+            name="serie"
+            value={form.serie}
             onChange={handleChange}
             required
             className="w-full border px-3 py-2 rounded"

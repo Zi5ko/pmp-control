@@ -7,11 +7,12 @@ router.post('/', async (req, res) => {
   const nombre = `${familia} ${marca} ${modelo}`;
 
   try {
-    const result = await db.query(`
-      INSERT INTO equipos (nombre, familia, criticidad, ubicacion, marca, modelo, serie, plan_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *`,
-      [nombre, familia, criticidad, ubicacion, marca, modelo, serie, plan_id]);
+    const result = await db.query(
+      `INSERT INTO equipos (nombre, familia, criticidad, ubicacion, marca, modelo, serie, fecha_ingreso, plan_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_DATE, $8)
+       RETURNING *`,
+      [nombre, familia, criticidad, ubicacion, marca, modelo, serie, plan_id]
+    );
 
     res.status(201).json(result.rows[0]);
   } catch (err) {

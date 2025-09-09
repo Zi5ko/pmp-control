@@ -26,8 +26,10 @@ export default function Visualizar() {
               <th className="border px-3 py-2">Familia</th>
               <th className="border px-3 py-2">Marca</th>
               <th className="border px-3 py-2">Modelo</th>
+              <th className="border px-3 py-2">Serie</th>
               <th className="border px-3 py-2">Ubicación</th>
               <th className="border px-3 py-2">Criticidad</th>
+              <th className="border px-3 py-2">Fecha ingreso</th>
               <th className="border px-3 py-2">Plan</th>
             </tr>
           </thead>
@@ -39,8 +41,10 @@ export default function Visualizar() {
                 <td className="border px-3 py-1">{equipo.familia}</td>
                 <td className="border px-3 py-1">{equipo.marca}</td>
                 <td className="border px-3 py-1">{equipo.modelo}</td>
+                <td className="border px-3 py-1">{equipo.serie}</td>
                 <td className="border px-3 py-1">{equipo.ubicacion}</td>
                 <td className="border px-3 py-1">{equipo.criticidad}</td>
+                <td className="border px-3 py-1">{equipo.fecha_ingreso}</td>
                 <td className="border px-3 py-1">{equipo.nombre_plan || "Sin plan"}</td>
               </tr>
             ))}
