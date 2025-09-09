@@ -13,6 +13,7 @@ import InicioTecnico from "./roles/tecnico/Inicio";
 import InicioSupervisor from "./roles/supervisor/Inicio";
 import InicioResponsable from "./roles/responsable_institucional/Inicio";
 import InicioESMP from "./roles/esmp/Inicio";
+import InicioCalidad from "./roles/calidad/Inicio";
 
 import Usuarios from "./pages/functions/Usuarios";
 import Equipos from "./pages/functions/Equipos";
@@ -114,6 +115,21 @@ function App() {
           <Route path="alertas" element={<Alertas />} />
           <Route path="asignar-ordenes" element={<AsignarOrdenes />} />
           <Route path="validacion" element={<ValidarOrdenes />} />
+        </Route>
+
+        {/* CALIDAD */}
+        <Route
+          path="/calidad"
+          element={
+            <ProtectedRoute allowedRoles={[4]}>
+              <LayoutBase />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<InicioCalidad />} />
+          <Route path="calendario" element={<Calendario />} />
+          <Route path="lista-equipos" element={<Visualizar />} />
+          <Route path="auditoria" element={<Auditoria />} />
         </Route>
 
         {/* RESPONSABLE */}

@@ -44,21 +44,21 @@ export default function Sidebar() {
       path: basePath,
       label: "Dashboard",
       icon: LayoutDashboard,
-      roles: [1, 2, 3, 5, 6],
+      roles: [1, 2, 3, 4, 5, 6],
     },
     {
       path: `${basePath}/calendario`,
       label: "Calendario",
       icon: Calendar,
-      roles: [2, 3],
+      roles: [2, 3, 4],
     },
     {
       label: "Gestión de Equipos",
       icon: MonitorDot,
-      roles: [1, 6],
+      roles: [1, 6, 4],
       children: [
         { path: `${basePath}/equipos`, label: "Registrar Equipos", icon: ClipboardList, roles: [1, 6] },
-        { path: `${basePath}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 6] },
+        { path: `${basePath}/lista-equipos`, label: "Lista de Equipos", icon: Wrench, roles: [1, 6, 4] },
       ]
     },
     {
@@ -95,7 +95,7 @@ export default function Sidebar() {
       path: `${basePath}/auditoria`,
       label: "Auditoría de Registros",
       icon: FileText,
-      roles: [1, 5, 6]
+      roles: [1, 4, 5, 6]
     }
   ];
 
