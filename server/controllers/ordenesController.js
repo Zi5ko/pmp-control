@@ -344,7 +344,7 @@ async function obtenerOrdenesSinResponsable(req, res) {
 
     const { rows } = await db.query(
       `
-      SELECT o.*, e.nombre AS equipo_nombre, e.ubicacion
+      SELECT o.*, e.nombre AS equipo_nombre, e.ubicacion, e.serie AS equipo_serie
       FROM ordenes_trabajo o
       JOIN equipos e ON o.equipo_id = e.id
       WHERE o.estado = 'pendiente'
