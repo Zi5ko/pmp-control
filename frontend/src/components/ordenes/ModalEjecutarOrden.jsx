@@ -9,13 +9,13 @@ export default function ModalEjecutarOrden({
   equipoSerie,
   equipoNombre,
   equipoUbicacion,
-  observacionesPrevias = {},
+  observacionesPrevias,
   onClose,
   onSuccess
 }) {
-  const [tareas, setTareas] = useState(observacionesPrevias.tareas || "");
+  const [tareas, setTareas] = useState(observacionesPrevias?.tareas || "");
   const [observaciones, setObservaciones] = useState(
-    observacionesPrevias.observaciones || ""
+    observacionesPrevias?.observaciones || ""
   );
   const [archivos, setArchivos] = useState([]);
   const [subiendo, setSubiendo] = useState(false);
