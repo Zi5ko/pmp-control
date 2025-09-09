@@ -227,6 +227,7 @@ export default function ValidarOrdenes() {
           </button>
         </div>
       </div>
+      </div>
       {ordenDetalle && (
         <DetalleOrdenModal
           orden={ordenDetalle}
