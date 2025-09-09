@@ -33,7 +33,6 @@ export default function Equipos() {
     ubicacion: "",
     plan_id: "",
     serie: "",
-    fecha_ingreso: "",
   });
 
   const [planes, setPlanes] = useState([]);
@@ -167,6 +166,36 @@ export default function Equipos() {
           </div>
 
           <div className="flex flex-col">
+            <label className="text-sm text-gray-700 mb-1">Ubicación</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-2.5 text-gray-400" size={16} />
+              <input
+                type="text"
+                name="ubicacion"
+                value={form.ubicacion}
+                onChange={handleChange}
+                required
+                className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-700 mb-1">Serie</label>
+            <div className="relative">
+              <ShieldCheck className="absolute left-3 top-2.5 text-gray-400" size={16} />
+              <input
+                type="text"
+                name="serie"
+                value={form.serie}
+                onChange={handleChange}
+                required
+                className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col">
             <label className="text-sm text-gray-700 mb-1">Criticidad</label>
             <select
               name="criticidad"
@@ -181,21 +210,6 @@ export default function Equipos() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="flex flex-col md:col-span-2">
-            <label className="text-sm text-gray-700 mb-1">Ubicación</label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-2.5 text-gray-400" size={16} />
-              <input
-                type="text"
-                name="ubicacion"
-                value={form.ubicacion}
-                onChange={handleChange}
-                required
-                className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
-              />
-            </div>
           </div>
 
           <div className="flex flex-col md:col-span-2">

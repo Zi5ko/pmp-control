@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS equipos (
   marca VARCHAR(50),
   modelo VARCHAR(50),
   serie VARCHAR(50) UNIQUE,
-  fecha_ingreso DATE,
+  fecha_ingreso DATE DEFAULT CURRENT_DATE,
   fuente_plan VARCHAR(20) NOT NULL CHECK (fuente_plan IN ('garantia', 'contrato', 'interno')),
   plan_id INTEGER REFERENCES planes_mantenimiento(id)
 );
