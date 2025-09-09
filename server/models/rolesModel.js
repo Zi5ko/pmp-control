@@ -1,7 +1,8 @@
 const pool = require('../db');
 
 async function getRoles() {
-  const result = await pool.query("SELECT id, nombre FROM roles WHERE nombre <> 'calidad' ORDER BY id");
+  // Devolver todos los roles sin excluir "calidad"
+  const result = await pool.query("SELECT id, nombre FROM roles ORDER BY id");
   return result.rows;
 }
 
