@@ -32,9 +32,17 @@ async function crearOrden(data) {
   const result = await pool.query(
     `INSERT INTO ordenes_trabajo
      (equipo_id, plan_id, fecha_programada, fecha_ejecucion, responsable, estado, observaciones)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
      RETURNING *`,
-    [equipo_id, plan_id, fecha_programada, fecha_ejecucion, responsable, estado, observaciones]
+    [
+      equipo_id,
+      plan_id,
+      fecha_programada,
+      fecha_ejecucion,
+      responsable,
+      estado,
+      JSON.stringify(observaciones || {})
+    ]
   );
   return result.rows[0];
 }
@@ -91,13 +99,16 @@ async function obtenerOrdenesEjecutadasNoValidadas() {
 async function validarOrdenTrabajo(id, validada, comentario, supervisor_id) {
   const nuevoEstado = validada ? 'validada' : 'pendiente';
 
-  const update = await pool.query(`
+  const update = await pool.query(
+    `
     UPDATE ordenes_trabajo
     SET estado = $1,
-    observaciones = COALESCE(observaciones, '') || '\n' || $2
+        observaciones = COALESCE(observaciones, '{}'::jsonb) || jsonb_build_object('comentarios_supervisor', $2)
     WHERE id = $3
     RETURNING *
-  `, [nuevoEstado, comentario || '', id]);
+  `,
+    [nuevoEstado, comentario || '', id]
+  );
 
   await crearLog({
     usuario_id: supervisor_id,

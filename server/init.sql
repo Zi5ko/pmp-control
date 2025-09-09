@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS ordenes_trabajo (
   fecha_ejecucion DATE,
   responsable VARCHAR(100),
   estado VARCHAR(20) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'realizada', 'reprogramada', 'omitida')),
-  observaciones TEXT
+  observaciones JSONB
 );
 
 -- Tabla: tipos_alerta

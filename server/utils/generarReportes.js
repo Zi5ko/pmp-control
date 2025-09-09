@@ -39,14 +39,33 @@ async function generarReportePDF(orden, firmaTecnicoPath, firmaServicioPath, nom
       .text(orden.estado, 150, infoTop + 80);
     doc.moveTo(50, doc.y + 10).lineTo(550, doc.y + 10).stroke();
 
-    // Observaciones
+    // Observaciones, tareas y comentarios del supervisor
     if (orden.observaciones) {
-      doc
-        .moveDown()
-        .font('Helvetica')
-        .text('Observaciones:')
-        .font('Helvetica-Oblique')
-        .text(orden.observaciones, { width: 500 });
+      const { observaciones, tareas, comentarios_supervisor } = orden.observaciones;
+      if (tareas) {
+        doc
+          .moveDown()
+          .font('Helvetica')
+          .text('Tareas realizadas:')
+          .font('Helvetica-Oblique')
+          .text(tareas, { width: 500 });
+      }
+      if (observaciones) {
+        doc
+          .moveDown()
+          .font('Helvetica')
+          .text('Observaciones:')
+          .font('Helvetica-Oblique')
+          .text(observaciones, { width: 500 });
+      }
+      if (comentarios_supervisor) {
+        doc
+          .moveDown()
+          .font('Helvetica')
+          .text('Comentarios del supervisor:')
+          .font('Helvetica-Oblique')
+          .text(comentarios_supervisor, { width: 500 });
+      }
     }
     doc.moveTo(50, doc.y + 10).lineTo(550, doc.y + 10).stroke();
 
