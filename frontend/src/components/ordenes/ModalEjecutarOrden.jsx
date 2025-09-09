@@ -5,9 +5,10 @@ import axios from "axios";
 
 export default function ModalEjecutarOrden({
   ordenId,
+  equipoId,
+  equipoSerie,
   equipoNombre,
   equipoUbicacion,
-  ordenCodigo,
   observacionesPrevias = {},
   onClose,
   onSuccess
@@ -70,7 +71,7 @@ export default function ModalEjecutarOrden({
     }
   };
 
-  const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
+  const formatearCodigo = (prefijo, id) => `${prefijo}${String(id).padStart(4, "0")}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -83,11 +84,19 @@ export default function ModalEjecutarOrden({
         <div className="flex flex-col gap-2 mb-6 mt-4">
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Tag className="w-4 h-4 text-[#111A3A]" />
-            <span><strong>ID:</strong> ID{String(ordenCodigo).padStart(4, "0")}</span>
+            <span><strong>ID:</strong> {formatearCodigo("ID", equipoId)}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <Tag className="w-4 h-4 text-[#111A3A]" />
+            <span><strong>OT:</strong> {formatearCodigo("OT", ordenId)}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <SquarePlus className="w-4 h-4 text-[#111A3A]" />
             <span><strong>Equipo:</strong> {equipoNombre}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <Tag className="w-4 h-4 text-[#111A3A]" />
+            <span><strong>Serie:</strong> {equipoSerie || "No especificada"}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <MapPin className="w-4 h-4 text-[#111A3A]" />

@@ -312,7 +312,7 @@ const obtenerOrdenesPendientesAsignadas = async (req, res) => {
 
     const params = [hasta.toISOString().slice(0, 10)];
     let query = `
-      SELECT o.*, e.nombre AS equipo_nombre, e.ubicacion, u.nombre AS responsable_nombre
+      SELECT o.*, e.nombre AS equipo_nombre, e.ubicacion, e.serie AS equipo_serie, u.nombre AS responsable_nombre
       FROM ordenes_trabajo o
       JOIN equipos e ON o.equipo_id = e.id
       LEFT JOIN usuarios u ON o.responsable = CAST(u.id AS VARCHAR)
