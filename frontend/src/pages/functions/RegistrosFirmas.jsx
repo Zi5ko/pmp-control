@@ -19,15 +19,36 @@ export default function RegistrosYFirmas() {
   const [archivoGenerado, setArchivoGenerado] = useState(null);
   const [mensaje, setMensaje] = useState(null);
 
-  const extraerDetalle = (texto = "") => {
-    if (typeof texto !== "string") {
+  const extraerDetalle = (obs) => {
+    const limpiarTexto = (valor, defecto) => {
+      if (!valor) return defecto;
+      if (Array.isArray(valor)) {
+        const texto = valor
+          .map((v) => (typeof v === "string" ? v : v?.descripcion || v?.tarea || ""))
+          .filter(Boolean)
+          .join("\n")
+          .trim();
+        return texto || defecto;
+      }
+      return String(valor).trim() || defecto;
+    };
+
+    if (!obs) {
       return {
         tareas: "Sin tareas registradas.",
         observaciones: "Sin observaciones.",
       };
     }
-    const tareasMatch = texto.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
-    const observacionesMatch = texto.match(/Observaciones:\n([\s\S]*)/);
+
+    if (typeof obs === "object") {
+      return {
+        tareas: limpiarTexto(obs.tareas, "Sin tareas registradas."),
+        observaciones: limpiarTexto(obs.observaciones, "Sin observaciones."),
+      };
+    }
+
+    const tareasMatch = obs.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
+    const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*)/);
     return {
       tareas: tareasMatch ? tareasMatch[1].trim() : "Sin tareas registradas.",
       observaciones: observacionesMatch ? observacionesMatch[1].trim() : "Sin observaciones.",
@@ -98,7 +119,7 @@ export default function RegistrosYFirmas() {
     }
   };
 
-  const detalle = ordenDetalle ? extraerDetalle(ordenDetalle.observaciones || "") : null;
+  const detalle = ordenDetalle ? extraerDetalle(ordenDetalle.observaciones) : null;
 
   return (
     <div className="p-6">

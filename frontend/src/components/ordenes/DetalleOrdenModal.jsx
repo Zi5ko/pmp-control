@@ -4,7 +4,35 @@ import { XCircle } from "lucide-react";
 export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
   if (!orden) return null;
   const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-  const observacion = orden.observaciones?.observaciones || "Sin observaciones";
+
+  const limpiarTexto = (valor, defecto) => {
+    if (!valor) return defecto;
+    if (Array.isArray(valor)) {
+      const texto = valor
+        .map((v) => (typeof v === "string" ? v : v?.descripcion || v?.tarea || ""))
+        .filter(Boolean)
+        .join("\n")
+        .trim();
+      return texto || defecto;
+    }
+    return String(valor).trim() || defecto;
+  };
+
+  let tareas = "Sin tareas registradas";
+  let observacion = "Sin observaciones";
+  const obs = orden.observaciones;
+
+  if (obs) {
+    if (typeof obs === "object") {
+      tareas = limpiarTexto(obs.tareas, tareas);
+      observacion = limpiarTexto(obs.observaciones, observacion);
+    } else {
+      const tareasMatch = obs.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
+      const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*)/);
+      if (tareasMatch) tareas = tareasMatch[1].trim();
+      if (observacionesMatch) observacion = observacionesMatch[1].trim();
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center">
@@ -19,6 +47,10 @@ export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
         <h2 className="text-lg font-bold text-[#111A3A] mb-4">Detalle de la OT</h2>
 
         <div className="space-y-4 text-sm text-gray-700">
+          <div>
+            <h3 className="font-semibold text-[#111A3A] mb-1">Tareas realizadas</h3>
+            <p className="whitespace-pre-line">{tareas}</p>
+          </div>
           <div>
             <h3 className="font-semibold text-[#111A3A] mb-1">Observaciones</h3>
             <p className="whitespace-pre-line">{observacion}</p>
