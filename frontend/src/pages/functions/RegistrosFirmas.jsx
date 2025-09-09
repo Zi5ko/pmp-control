@@ -20,6 +20,12 @@ export default function RegistrosYFirmas() {
   const [mensaje, setMensaje] = useState(null);
 
   const extraerDetalle = (texto = "") => {
+    if (typeof texto !== "string") {
+      return {
+        tareas: "Sin tareas registradas.",
+        observaciones: "Sin observaciones.",
+      };
+    }
     const tareasMatch = texto.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
     const observacionesMatch = texto.match(/Observaciones:\n([\s\S]*)/);
     return {
@@ -58,10 +64,14 @@ export default function RegistrosYFirmas() {
   
       if (pdfRespuesta && pdfRespuesta.url) {
         setMensaje({ tipo: "success", texto: "Reporte generado correctamente." });
-  
+
         // Mostrar el PDF en nueva pestaña
         const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-        window.open(`${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`, "_blank");
+        const rutaFinal = pdfRespuesta.url;
+        window.open(
+          `${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`,
+          "_blank"
+        );
   
         // Limpiar estados
         setFirmaServicio(null);
