@@ -89,7 +89,8 @@ export default function ValidarOrdenes() {
   );
 
   return (
-    <div className="p-6">
+    <>
+      <div className="p-6">
       {mensaje?.tipo === "success" && (
         <SuccessBanner
           title="Éxito"
@@ -226,13 +227,13 @@ export default function ValidarOrdenes() {
           </button>
         </div>
       </div>
-    </div>
-    {ordenDetalle && (
-      <DetalleOrdenModal
-        orden={ordenDetalle}
-        evidencias={evidencias}
-        onClose={() => setOrdenDetalle(null)}
-      />
-    )}
+      {ordenDetalle && (
+        <DetalleOrdenModal
+          orden={ordenDetalle}
+          evidencias={evidencias}
+          onClose={() => setOrdenDetalle(null)}
+        />
+      )}
+    </>
   );
 }
