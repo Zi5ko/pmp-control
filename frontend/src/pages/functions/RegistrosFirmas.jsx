@@ -20,6 +20,19 @@ export default function RegistrosYFirmas() {
   const [mensaje, setMensaje] = useState(null);
 
   const extraerDetalle = (obs) => {
+    const limpiarTexto = (valor, defecto) => {
+      if (!valor) return defecto;
+      if (Array.isArray(valor)) {
+        const texto = valor
+          .map((v) => (typeof v === "string" ? v : v?.descripcion || v?.tarea || ""))
+          .filter(Boolean)
+          .join("\n")
+          .trim();
+        return texto || defecto;
+      }
+      return String(valor).trim() || defecto;
+    };
+
     if (!obs) {
       return {
         tareas: "Sin tareas registradas.",
@@ -29,8 +42,8 @@ export default function RegistrosYFirmas() {
 
     if (typeof obs === "object") {
       return {
-        tareas: obs.tareas?.trim() || "Sin tareas registradas.",
-        observaciones: obs.observaciones?.trim() || "Sin observaciones.",
+        tareas: limpiarTexto(obs.tareas, "Sin tareas registradas."),
+        observaciones: limpiarTexto(obs.observaciones, "Sin observaciones."),
       };
     }
 
