@@ -3,7 +3,7 @@ import { XCircle } from "lucide-react";
 
 export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
   if (!orden) return null;
-  const baseUrl = import.meta.env.VITE_API_URL;
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
   const observacion = orden.observaciones?.observaciones || "Sin observaciones";
 
   return (
