@@ -101,6 +101,7 @@ export default function Reportes() {
           ordenCodigo={ordenSeleccionada.id}
           equipoNombre={ordenSeleccionada.equipo_nombre}
           equipoUbicacion={ordenSeleccionada.ubicacion}
+          observacionesPrevias={ordenSeleccionada.observaciones}
           onClose={() => setOrdenSeleccionada(null)}
           onSuccess={fetchOrdenes}
         />

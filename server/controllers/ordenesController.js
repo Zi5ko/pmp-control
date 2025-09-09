@@ -220,11 +220,14 @@ async function ejecutarOrden(req, res) {
   try {
     const ordenId = req.params.id;
 
-    const { rows: ordenExistente } = await db.query(`
+    const { rows: ordenExistente } = await db.query(
+      `
       SELECT estado, equipo_id, plan_id, fecha_programada
       FROM ordenes_trabajo
       WHERE id = $1
-    `, [ordenId]);
+    `,
+      [ordenId]
+    );
 
     if (!ordenExistente.length) {
       return res.status(404).json({ error: "Orden no encontrada" });
@@ -235,12 +238,18 @@ async function ejecutarOrden(req, res) {
     }
 
     const { equipo_id, plan_id, fecha_programada } = ordenExistente[0];
+    const { observaciones } = req.body;
 
-    await db.query(`
+    await db.query(
+      `
       UPDATE ordenes_trabajo
-      SET estado = 'realizada', fecha_ejecucion = CURRENT_DATE
+      SET estado = 'realizada',
+          fecha_ejecucion = CURRENT_DATE,
+          observaciones = COALESCE(observaciones, '{}'::jsonb) || $2::jsonb
       WHERE id = $1
-    `, [ordenId]);
+    `,
+      [ordenId, JSON.stringify(observaciones || {})]
+    );
 
     const frecuenciaResult = await db.query(`
       SELECT frecuencia FROM planes_mantenimiento WHERE id = $1
@@ -544,6 +553,7 @@ async function obtenerEventosCalendario(req, res) {
     // 1. Obtener todas las órdenes reales (planificadas)
     let queryOrdenes = `
       SELECT ot.id, ot.equipo_id, ot.plan_id, ot.fecha_programada, ot.estado,
+             ot.observaciones,
              eq.nombre, eq.serie, eq.criticidad, eq.ubicacion,
              pm.nombre AS plan, u.nombre AS responsable
       FROM ordenes_trabajo ot
@@ -575,6 +585,7 @@ async function obtenerEventosCalendario(req, res) {
         serie: ot.serie,
         plan: ot.plan,
         responsable: ot.responsable,
+        observaciones: ot.observaciones,
       });
     });
 

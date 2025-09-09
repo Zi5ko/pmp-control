@@ -35,7 +35,8 @@ export default function Calendario() {
         plan: evento.plan || "-",
         ubicacion: evento.ubicacion || "-",
         responsable: evento.responsable || null,
-        equipo_id: evento.equipo_id
+        equipo_id: evento.equipo_id,
+        observaciones: evento.observaciones || null
       }));
 
       setEventos(eventosConvertidos);

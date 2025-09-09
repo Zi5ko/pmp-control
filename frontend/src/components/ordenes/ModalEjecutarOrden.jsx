@@ -1,5 +1,5 @@
 // src/components/ordenes/ModalEjecutarOrden.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tag, MapPin, SquarePlus } from "lucide-react";
 import axios from "axios";
 
@@ -8,14 +8,22 @@ export default function ModalEjecutarOrden({
   equipoNombre,
   equipoUbicacion,
   ordenCodigo,
+  observacionesPrevias = {},
   onClose,
   onSuccess
 }) {
-  const [tareas, setTareas] = useState("");
-  const [observaciones, setObservaciones] = useState("");
+  const [tareas, setTareas] = useState(observacionesPrevias.tareas || "");
+  const [observaciones, setObservaciones] = useState(
+    observacionesPrevias.observaciones || ""
+  );
   const [archivos, setArchivos] = useState([]);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setTareas(observacionesPrevias?.tareas || "");
+    setObservaciones(observacionesPrevias?.observaciones || "");
+  }, [observacionesPrevias]);
 
   const handleArchivoChange = (e) => {
     setArchivos(Array.from(e.target.files));
@@ -43,12 +51,9 @@ export default function ModalEjecutarOrden({
         });
       }
 
-      // Unir tareas y observaciones
-      const comentarioCompleto = `Tareas realizadas:\n${tareas}\n\nObservaciones:\n${observaciones}`;
-
       await axios.put(
         `${import.meta.env.VITE_API_URL}/ordenes/${ordenId}/ejecutar`,
-        { observaciones: comentarioCompleto },
+        { observaciones: { tareas, observaciones } },
         {
           headers: { Authorization: `Bearer ${token}` },
         }

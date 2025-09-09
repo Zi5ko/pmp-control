@@ -188,6 +188,7 @@ export default function EventModal({ evento, onClose }) {
           ordenCodigo={evento.id}
           equipoNombre={evento.title}
           equipoUbicacion={evento.ubicacion}
+          observacionesPrevias={evento.observaciones}
           onClose={() => setMostrarEjecutar(false)}
           onSuccess={() => {
             setMostrarEjecutar(false);
