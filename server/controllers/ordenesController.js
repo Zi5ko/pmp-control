@@ -251,6 +251,13 @@ async function ejecutarOrden(req, res) {
       [ordenId, JSON.stringify(observaciones || {})]
     );
 
+    await crearLog({
+      usuario_id: 2,
+      accion: 'ejecutar_orden',
+      tabla: 'ordenes_trabajo',
+      registro_id: ordenId
+    });
+
     const frecuenciaResult = await db.query(`
       SELECT frecuencia FROM planes_mantenimiento WHERE id = $1
     `, [plan_id]);
@@ -527,6 +534,13 @@ const generarPDF = async (req, res) => {
       `UPDATE ordenes_trabajo SET estado = 'firmada' WHERE id = $1`,
       [ordenId]
     );
+
+    await crearLog({
+      usuario_id: 2,
+      accion: 'firmar_orden',
+      tabla: 'ordenes_trabajo',
+      registro_id: ordenId
+    });
 
     // 📁 Guardar evidencia en la base de datos
     await db.query(`
