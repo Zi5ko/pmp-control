@@ -75,12 +75,13 @@ async function getOrdenDetallada(id) {
 // Obtener órdenes ejecutadas no validadas
 async function obtenerOrdenesEjecutadasNoValidadas() {
   const query = `
-    SELECT ot.*, 
-           e.nombre AS equipo_nombre, 
-           e.ubicacion, 
+    SELECT ot.*,
+           e.nombre AS equipo_nombre,
+           e.ubicacion,
+           e.serie AS equipo_serie,
            u.nombre AS tecnico_nombre,
            (
-             SELECT COUNT(*) 
+             SELECT COUNT(*)
              FROM evidencias ev
              WHERE ev.orden_id = ot.id
            ) AS total_evidencias

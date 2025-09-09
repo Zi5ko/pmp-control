@@ -6,7 +6,7 @@ import ErrorBanner from "../../components/ErrorBanner";
 import MiniCalendar from "../../components/MiniCalendar";
 import { getOrdenesEjecutadas, validarOrden } from "../../services/ordenesServices";
 
-const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
+const formatearCodigo = (prefijo, id) => `${prefijo}${String(id).padStart(4, "0")}`;
 
 export default function ValidarOrdenes() {
   const [ordenes, setOrdenes] = useState([]);
@@ -122,7 +122,9 @@ export default function ValidarOrdenes() {
                   />
                 </th>
                 <th className="p-3">ID</th>
+                <th className="p-3">OT</th>
                 <th className="p-3">Equipo</th>
+                <th className="p-3">Serie</th>
                 <th className="p-3">Ubicación</th>
                 <th className="p-3">Técnico</th>
                 <th className="p-3">Ejecución</th>
@@ -140,10 +142,16 @@ export default function ValidarOrdenes() {
                     />
                   </td>
                   <td className="p-3 text-sm text-gray-800">
-                    {formatearID(orden.id)}
+                    {formatearCodigo("ID", orden.equipo_id)}
+                  </td>
+                  <td className="p-3 text-sm text-gray-800">
+                    {formatearCodigo("OT", orden.id)}
                   </td>
                   <td className="p-3 text-sm text-gray-600">
                     {orden.equipo_nombre}
+                  </td>
+                  <td className="p-3 text-sm text-gray-600">
+                    {orden.equipo_serie}
                   </td>
                   <td className="p-3 text-sm text-gray-600">
                     {orden.ubicacion}
