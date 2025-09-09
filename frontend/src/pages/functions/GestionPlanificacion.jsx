@@ -33,7 +33,7 @@ export default function GestionPlanificacion() {
     }
   }, [navigate, user]);
 
-  useEffect(() => {
+  const cargarEquipos = () => {
     axios
       .get(`${import.meta.env.VITE_API_URL}/ordenes/faltantes`)
       .then((res) => {
@@ -43,6 +43,10 @@ export default function GestionPlanificacion() {
         console.error("Error al cargar equipos sin orden:", err);
         setMensaje({ tipo: "error", texto: "Error al cargar equipos." });
       });
+  };
+
+  useEffect(() => {
+    cargarEquipos();
   }, []);
 
   useEffect(() => {
@@ -95,6 +99,7 @@ export default function GestionPlanificacion() {
       setMensaje({ tipo: "success", texto: "Mantenimientos programados con éxito." });
       setSeleccionados([]);
       setFecha("");
+      cargarEquipos();
     } catch (err) {
       console.error("Error al programar:", err);
       setMensaje({ tipo: "error", texto: "Error al programar mantenimientos." });
