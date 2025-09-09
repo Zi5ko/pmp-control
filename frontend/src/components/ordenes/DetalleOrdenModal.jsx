@@ -20,17 +20,24 @@ export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
 
   let tareas = "Sin tareas registradas";
   let observacion = "Sin observaciones";
+  let comentarioSupervisor = "Sin comentarios del supervisor";
   const obs = orden.observaciones;
 
   if (obs) {
     if (typeof obs === "object") {
       tareas = limpiarTexto(obs.tareas, tareas);
       observacion = limpiarTexto(obs.observaciones, observacion);
+      comentarioSupervisor = limpiarTexto(
+        obs.comentarios_supervisor,
+        comentarioSupervisor
+      );
     } else {
       const tareasMatch = obs.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
-      const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*)/);
+      const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*?)(?:\n\nComentarios del supervisor:|$)/);
+      const comentariosMatch = obs.match(/Comentarios del supervisor:\n([\s\S]*)/);
       if (tareasMatch) tareas = tareasMatch[1].trim();
       if (observacionesMatch) observacion = observacionesMatch[1].trim();
+      if (comentariosMatch) comentarioSupervisor = comentariosMatch[1].trim();
     }
   }
 
@@ -54,6 +61,10 @@ export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
           <div>
             <h3 className="font-semibold text-[#111A3A] mb-1">Observaciones</h3>
             <p className="whitespace-pre-line">{observacion}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-[#111A3A] mb-1">Comentario del supervisor</h3>
+            <p className="whitespace-pre-line">{comentarioSupervisor}</p>
           </div>
 
           <div>

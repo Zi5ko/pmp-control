@@ -102,6 +102,16 @@ export default function ModalEjecutarOrden({
             <MapPin className="w-4 h-4 text-[#111A3A]" />
             <span><strong>Ubicación:</strong> {equipoUbicacion || "No especificada"}</span>
           </div>
+          {observacionesPrevias?.comentarios_supervisor !== undefined && (
+            <div className="flex items-start gap-2 text-sm text-gray-700">
+              <Tag className="w-4 h-4 text-[#111A3A]" />
+              <span>
+                <strong>Comentario del supervisor:</strong>{" "}
+                {observacionesPrevias.comentarios_supervisor ||
+                  "Sin comentarios"}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="mb-4">

@@ -37,6 +37,7 @@ export default function RegistrosYFirmas() {
       return {
         tareas: "Sin tareas registradas.",
         observaciones: "Sin observaciones.",
+        comentarioSupervisor: "Sin comentarios del supervisor.",
       };
     }
 
@@ -44,14 +45,24 @@ export default function RegistrosYFirmas() {
       return {
         tareas: limpiarTexto(obs.tareas, "Sin tareas registradas."),
         observaciones: limpiarTexto(obs.observaciones, "Sin observaciones."),
+        comentarioSupervisor: limpiarTexto(
+          obs.comentarios_supervisor,
+          "Sin comentarios del supervisor."
+        ),
       };
     }
 
     const tareasMatch = obs.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
-    const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*)/);
+    const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*?)(?:\n\nComentarios del supervisor:|$)/);
+    const comentariosMatch = obs.match(/Comentarios del supervisor:\n([\s\S]*)/);
     return {
       tareas: tareasMatch ? tareasMatch[1].trim() : "Sin tareas registradas.",
-      observaciones: observacionesMatch ? observacionesMatch[1].trim() : "Sin observaciones.",
+      observaciones: observacionesMatch
+        ? observacionesMatch[1].trim()
+        : "Sin observaciones.",
+      comentarioSupervisor: comentariosMatch
+        ? comentariosMatch[1].trim()
+        : "Sin comentarios del supervisor.",
     };
   };
 
@@ -249,9 +260,13 @@ export default function RegistrosYFirmas() {
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Tareas realizadas</h3>
               <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.tareas}</p>
             </div>
-            <div>
+            <div className="mb-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-1">Observaciones</h3>
               <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.observaciones}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">Comentario del supervisor</h3>
+              <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.comentarioSupervisor}</p>
             </div>
           </div>
         </div>
