@@ -57,6 +57,7 @@ export default function ListaEquipos() {
       normalizar(e.familia).includes(texto) ||
       normalizar(e.marca).includes(texto) ||
       normalizar(e.modelo).includes(texto) ||
+      normalizar(e.serie).includes(texto) ||
       normalizar(e.ubicacion).includes(texto) ||
       normalizar(e.criticidad).includes(texto) ||
       normalizar(e.nombre_plan || "").includes(texto) ||
@@ -134,6 +135,7 @@ export default function ListaEquipos() {
               <th className="p-3">Familia</th>
               <th className="p-3">Marca</th>
               <th className="p-3">Modelo</th>
+              <th className="p-3">Serie</th>
               <th className="p-3">Ubicación</th>
               <th className="p-3">Criticidad</th>
               <th className="p-3">Plan</th>
@@ -147,6 +149,7 @@ export default function ListaEquipos() {
                 <td className="p-3 text-sm text-gray-600">{equipo.familia}</td>
                 <td className="p-3 text-sm text-gray-600">{equipo.marca}</td>
                 <td className="p-3 text-sm text-gray-600">{equipo.modelo}</td>
+                <td className="p-3 text-sm text-gray-600">{equipo.serie}</td>
                 <td className="p-3 text-sm text-gray-600">{equipo.ubicacion}</td>
                 <td className="p-3">
                   <span
