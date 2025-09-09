@@ -185,7 +185,8 @@ export default function EventModal({ evento, onClose }) {
       {mostrarEjecutar && (
         <ModalEjecutarOrden
           ordenId={evento.id}
-          ordenCodigo={evento.id}
+          equipoId={evento.equipo_id}
+          equipoSerie={evento.serie}
           equipoNombre={evento.title}
           equipoUbicacion={evento.ubicacion}
           observacionesPrevias={evento.observaciones}

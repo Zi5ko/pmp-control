@@ -5,6 +5,8 @@ import { getOrdenesPendientes } from "../../services/ordenesServices";
 import { Search } from "lucide-react";
 import MiniCalendar from "../../components/MiniCalendar";
 
+const formatearCodigo = (prefijo, id) => `${prefijo}${String(id).padStart(4, "0")}`;
+
 export default function Reportes() {
   const [ordenes, setOrdenes] = useState([]);
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
@@ -53,7 +55,9 @@ export default function Reportes() {
             <thead className="bg-gray-50">
               <tr className="text-left text-sm text-gray-600">
                 <th className="p-3">ID</th>
+                <th className="p-3">OT</th>
                 <th className="p-3">Equipo</th>
+                <th className="p-3">Serie</th>
                 <th className="p-3">Ubicación</th>
                 <th className="p-3">Fecha programada</th>
                 <th className="p-3">Responsable</th>
@@ -63,8 +67,10 @@ export default function Reportes() {
             <tbody>
               {ordenesFiltradas.map((orden) => (
                 <tr key={orden.id} className="border-t">
-                  <td className="p-3 text-sm text-gray-800">{`ID${String(orden.id).padStart(4, "0")}`}</td>
+                  <td className="p-3 text-sm text-gray-800">{formatearCodigo("ID", orden.equipo_id)}</td>
+                  <td className="p-3 text-sm text-gray-800">{formatearCodigo("OT", orden.id)}</td>
                   <td className="p-3 text-sm text-gray-600">{orden.equipo_nombre || "-"}</td>
+                  <td className="p-3 text-sm text-gray-600">{orden.equipo_serie || "-"}</td>
                   <td className="p-3 text-sm text-gray-600">{orden.ubicacion || "-"}</td>
                   <td className="p-3 text-sm text-gray-600">
                     {new Date(orden.fecha_programada).toLocaleDateString("es-CL")}
@@ -73,12 +79,12 @@ export default function Reportes() {
                     {orden?.responsable_nombre?.trim() || <span className="italic text-gray-400">Sin asignar</span>}
                   </td>
                   <td className="p-3 text-center">
-                  <button
-                    onClick={() => setOrdenSeleccionada(orden)}
-                    className="bg-[#D0FF34] text-[#111A3A] px-6 py-1 rounded shadow hover:bg-lime-300"
-                  >
-                    <span className="text-sm">Ejecutar Orden</span>
-                  </button>
+                    <button
+                      onClick={() => setOrdenSeleccionada(orden)}
+                      className="bg-[#D0FF34] text-[#111A3A] px-6 py-1 rounded shadow hover:bg-lime-300"
+                    >
+                      <span className="text-sm">Ejecutar Orden</span>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -98,7 +104,8 @@ export default function Reportes() {
       {ordenSeleccionada && (
         <ModalEjecutarOrden
           ordenId={ordenSeleccionada.id}
-          ordenCodigo={ordenSeleccionada.id}
+          equipoId={ordenSeleccionada.equipo_id}
+          equipoSerie={ordenSeleccionada.equipo_serie}
           equipoNombre={ordenSeleccionada.equipo_nombre}
           equipoUbicacion={ordenSeleccionada.ubicacion}
           observacionesPrevias={ordenSeleccionada.observaciones}
