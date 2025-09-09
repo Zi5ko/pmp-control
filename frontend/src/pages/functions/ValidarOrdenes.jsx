@@ -5,6 +5,8 @@ import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 import MiniCalendar from "../../components/MiniCalendar";
 import { getOrdenesEjecutadas, validarOrden } from "../../services/ordenesServices";
+import { getEvidenciasPorOrden } from "../../services/evidenciasService";
+import DetalleOrdenModal from "../../components/ordenes/DetalleOrdenModal";
 
 const formatearCodigo = (prefijo, id) => `${prefijo}${String(id).padStart(4, "0")}`;
 
@@ -14,6 +16,8 @@ export default function ValidarOrdenes() {
   const [comentario, setComentario] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [mensaje, setMensaje] = useState(null);
+  const [ordenDetalle, setOrdenDetalle] = useState(null);
+  const [evidencias, setEvidencias] = useState([]);
 
   const fetchOrdenes = async () => {
     try {
@@ -41,6 +45,17 @@ export default function ValidarOrdenes() {
       setSeleccionados([]);
     } else {
       setSeleccionados(filtradas.map((o) => o.id));
+    }
+  };
+
+  const verDetalle = async (orden) => {
+    setOrdenDetalle(orden);
+    try {
+      const data = await getEvidenciasPorOrden(orden.id);
+      setEvidencias(data);
+    } catch (error) {
+      console.error("Error al obtener evidencias:", error);
+      setEvidencias([]);
     }
   };
 
@@ -74,7 +89,8 @@ export default function ValidarOrdenes() {
   );
 
   return (
-    <div className="p-6">
+    <>
+      <div className="p-6">
       {mensaje?.tipo === "success" && (
         <SuccessBanner
           title="Éxito"
@@ -164,6 +180,12 @@ export default function ValidarOrdenes() {
                   </td>
                   <td className="p-3 text-sm text-gray-600">
                     {orden.total_evidencias} archivo(s)
+                    <button
+                      onClick={() => verDetalle(orden)}
+                      className="ml-2 bg-[#D0FF34] text-[#111A3A] font-semibold text-xs px-2 py-1 rounded shadow hover:bg-lime-300"
+                    >
+                      Ver
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -205,6 +227,13 @@ export default function ValidarOrdenes() {
           </button>
         </div>
       </div>
-    </div>
+      {ordenDetalle && (
+        <DetalleOrdenModal
+          orden={ordenDetalle}
+          evidencias={evidencias}
+          onClose={() => setOrdenDetalle(null)}
+        />
+      )}
+    </>
   );
 }
