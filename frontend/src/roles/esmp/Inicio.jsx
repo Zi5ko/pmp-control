@@ -31,6 +31,14 @@ export default function InicioESMP() {
     { name: "Pendientes", value: resumen.pendientes }
   ];
 
+  const getPieColor = (name = "") => {
+    const n = String(name).toLowerCase();
+    if (n.includes("pendiente")) return "#D3DDE7"; // pendientes
+    if (n.includes("completad") || n.includes("firmad")) return "#003D31"; // completadas/firmadas
+    if (n.includes("realizad") || n.includes("ejecutad")) return "#D6B4FC"; // realizada/ejecutada
+    return "#E5E7EB"; // default
+  };
+
   return (
     <div className="p-6 text-[#111A3A] grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6">
       <div>
@@ -63,7 +71,7 @@ export default function InicioESMP() {
                   label={({ name }) => `${name}`}
                 >
                   {dataChart.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 0 ? "#10B981" : "#DC2626"} />
+                    <Cell key={`cell-${index}`} fill={getPieColor(entry.name)} />
                   ))}
                 </Pie>
               </PieChart>

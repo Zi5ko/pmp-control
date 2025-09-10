@@ -8,6 +8,7 @@ import {
   Archive,
   Table,
   FileSignature,
+  Hash,
 } from "lucide-react";
 
 export default function HistorialTecnico() {
@@ -42,10 +43,16 @@ export default function HistorialTecnico() {
 
   const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-  const ordenesFiltradas = ordenes.filter((o) => {
-    if (estadoFiltro === "todas") return true;
-    return o.estado === estadoFiltro;
-  });
+  const ordenesFiltradas = ordenes
+    .filter((o) => {
+      if (estadoFiltro === "todas") return true;
+      return o.estado === estadoFiltro;
+    })
+    .sort((a, b) => {
+      const da = a?.fecha_ejecucion ? new Date(a.fecha_ejecucion) : new Date(0);
+      const db = b?.fecha_ejecucion ? new Date(b.fecha_ejecucion) : new Date(0);
+      return db - da;
+    });
 
   const estados = [
     { label: "Firmadas", value: "firmada" },
@@ -57,15 +64,15 @@ export default function HistorialTecnico() {
       {/* Encabezado + Filtro */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
         <h1 className="text-2xl text-[#111A3A]">Historial de mantenimientos</h1>
-        <div className="flex mt-4 md:mt-0 bg-white rounded-full overflow-hidden text-sm font-medium shadow-sm">
+        <div className="flex mt-4 md:mt-0 bg-white border border-gray-200 rounded-full overflow-hidden shadow-sm">
           {estados.map(({ label, value }) => (
             <button
               key={value}
               onClick={() => setEstadoFiltro(value)}
-              className={`px-4 py-2 transition ${
+              className={`px-4 py-1 text-sm font-semibold transition-all duration-200 ${
                 estadoFiltro === value
-                  ? "bg-lime-400 text-[#111A3A] font-bold"
-                  : "text-[#111A3A] hover:bg-gray-200"
+                  ? "bg-[#D0FF34] text-[#111A3A]"
+                  : "text-gray-600 hover:text-[#111A3A]"
               }`}
             >
               {label}
@@ -73,11 +80,7 @@ export default function HistorialTecnico() {
           ))}
           <button
             onClick={() => setEstadoFiltro("todas")}
-            className={`px-4 py-2 transition ${
-              estadoFiltro === "todas"
-                ? "bg-lime-400 text-[#111A3A] font-bold"
-                : "text-[#111A3A] hover:bg-gray-200"
-            }`}
+            className="px-4 py-1 text-sm font-semibold bg-gray-100 text-[#111A3A] hover:bg-gray-200"
           >
             Todas
           </button>
@@ -88,43 +91,49 @@ export default function HistorialTecnico() {
       {ordenesFiltradas.length === 0 ? (
         <p className="text-sm text-gray-500">No se encontraron mantenimientos ejecutados.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {ordenesFiltradas.map((orden) => {
             const otLabel = `OT${String(orden.id).padStart(4, "0")}`;
             const idEquipoLabel = `ID${String(orden.equipo_id).padStart(4, "0")}`;
 
             return (
-              <div key={orden.id} className="relative bg-white rounded-2xl border p-8 shadow-sm flex flex-col gap-2">
-                {/* Estado */}
-                <span
-                  className={`absolute top-6 right-8 px-4 py-1 rounded-md text-xs font-bold tracking-wide ${
-                    orden.estado === "firmada"
-                      ? "bg-indigo-600 text-white"
-                      : orden.estado === "validada"
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-400 text-white"
-                  }`}
-                >
-                  {orden.estado.toUpperCase()}
-                </span>
+              <div key={orden.id} className="relative bg-[#EBECF0] rounded-2xl p-6 shadow-sm flex flex-col gap-2">
+                {/* Flag/etiqueta de estado sobre el título */}
+                <div className="mb-1">
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-wide text-white ${
+                      orden.estado === "firmada"
+                        ? "bg-[#003D31] text-[#F0FF3D]"
+                        : orden.estado === "validada"
+                        ? "bg-[#273287] text-[#F0FF3D]"
+                        : "bg-gray-500"
+                    }`}
+                  >
+                    {orden.estado?.toUpperCase()}
+                  </span>
+                </div>
+                {/* Número de orden (estilo modal ejecutar mantenimiento) */}
+                <div className="absolute top-4 right-4 inline-flex items-center rounded-full bg-[#19123D] text-white text-xs font-semibold px-3 py-1 select-none">
+                  <Hash className="w-3.5 h-3.5 mr-1" />
+                  {otLabel}
+                </div>
 
-                {/* Nombre equipo */}
-                <h2 className="text-lg md:text-xl font-extrabold text-[#111A3A]">{orden.equipo_nombre || "Equipo sin nombre"}</h2>
+                {/* Nombre del equipo: más pequeño pero destacado */}
+                <h2 className="text-base md:text-lg font-bold text-[#111A3A] pr-28">{orden.equipo_nombre || "Equipo sin nombre"}</h2>
 
-                {/* Responsable */}
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">
-                    {orden.estado === "firmada" ? "Firmado por:" : orden.estado === "validada" ? "Validado por:" : "Ejecutado por:"}
-                  </span>{" "}
-                  {orden.responsable || "—"}
-                </p>
+                {/* Fecha de ejecución en casilla */}
+                <div className="mt-1">
+                  <span className="inline-block rounded-full bg-[#6787AF] text-white text-xs font-semibold px-3 py-1">
+                    {orden.fecha_ejecucion?.slice(0, 10) || "Fecha no registrada"}
+                  </span>
+                </div>
 
-                {/* Datos adicionales */}
-                <div className="text-sm text-gray-600 mt-1 space-y-1">
-                  <p><strong>OT:</strong> {otLabel}</p>
-                  <p><strong>Serie:</strong> {orden.serie || "No especificada"}</p>
+                {/* Info del equipo y técnico */}
+                <div className="text-sm text-gray-700 mt-2 space-y-1">
+                  <p><strong>ID Equipo:</strong> {idEquipoLabel}</p>
+                  <p><strong>Serie:</strong> {orden.equipo_serie || orden.serie || "No especificada"}</p>
                   <p><strong>Ubicación:</strong> {orden.ubicacion || "—"}</p>
-                  <p><strong>Fecha ejecución:</strong> {orden.fecha_ejecucion?.slice(0, 10) || "No registrada"}</p>
+                  <p><strong>Ejecutado por:</strong> {orden.tecnico_nombre || orden.responsable || "—"}</p>
                 </div>
 
                 {/* Botones de evidencias */}
