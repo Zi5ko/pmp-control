@@ -30,9 +30,11 @@ const Alertas = () => {
             <thead className="bg-[#F3F4F6] text-[#111A3A] text-left text-sm font-semibold">
               <tr>
                 <th className="px-4 py-3">ID Alerta</th>
+                <th className="px-4 py-3">Orden</th>
                 <th className="px-4 py-3">Equipo</th>
                 <th className="px-4 py-3">Ubicación</th>
                 <th className="px-4 py-3">Criticidad</th>
+                <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3">Mensaje</th>
                 <th className="px-4 py-3">Fecha</th>
               </tr>
@@ -52,6 +54,7 @@ const Alertas = () => {
                 return (
                   <tr key={alerta.id}>
                     <td className="px-4 py-3">{alerta.id}</td>
+                    <td className="px-4 py-3">#{alerta.orden_id}</td>
                     <td className="px-4 py-3">
                       {alerta.equipo_nombre
                         ? `${alerta.equipo_nombre} (ID ${alerta.equipo_id})`
@@ -65,6 +68,16 @@ const Alertas = () => {
                         if (c === "relevante") return <span className="px-2 py-0.5 rounded-full bg-[#334ED8] text-[#F0FF3D]">Relevante</span>;
                         if (c.includes("instalacion")) return <span className="px-2 py-0.5 rounded-full bg-[#D8E6FF] text-[#19123D]">Instalación</span>;
                         return <span className="text-gray-600">No relevante</span>;
+                      })()}
+                    </td>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const s = String(alerta.orden_estado || "").toLowerCase();
+                        if (s.includes("firmad")) return <span className="px-2 py-0.5 rounded-full bg-[#003D31] text-white">Firmada</span>;
+                        if (s.includes("valid")) return <span className="px-2 py-0.5 rounded-full bg-[#065F46] text-white">Validada</span>;
+                        if (s.includes("realizad")) return <span className="px-2 py-0.5 rounded-full bg-[#D6B4FC] text-[#1F2937]">Realizada</span>;
+                        if (s.includes("asignad")) return <span className="px-2 py-0.5 rounded-full bg-[#E5E7EB] text-[#111827]">Asignada</span>;
+                        return <span className="px-2 py-0.5 rounded-full bg-[#FDE68A] text-[#92400E]">Pendiente</span>;
                       })()}
                     </td>
                     <td className="px-4 py-3">{alerta.mensaje}</td>
