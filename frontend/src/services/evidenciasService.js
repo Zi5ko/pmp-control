@@ -6,3 +6,7 @@ export const getEvidenciasPorOrden = async (ordenId) => {
   return response.data;
 };
 
+export const deleteEvidencia = async (id) => {
+  const response = await api.delete(`/evidencias/${id}`);
+  return response.data;
+};

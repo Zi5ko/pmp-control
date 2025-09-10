@@ -262,13 +262,14 @@ const Auditoria = () => {
                     <td className="px-4 py-2">{orden.equipo_nombre}</td>
                     <td className="px-4 py-2">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-bold tracking-wide ${
-                          orden.estado === "firmada"
-                            ? "bg-indigo-600 text-white"
-                            : orden.estado === "validada"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-400 text-white"
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-bold tracking-wide ${(() => {
+                          const e = (orden.estado || '').toLowerCase();
+                          if (e === 'pendiente') return 'bg-[#D3DDE7] text-[#19123D]';
+                          if (e === 'realizada' || e === 'ejecutada') return 'bg-[#D6B4FC] text-[#19123D]';
+                          if (e === 'firmada' || e === 'completada' || e === 'completadas') return 'bg-[#003D31] text-[#F0FF3D]';
+                          if (e === 'validada') return 'bg-[#273287] text-[#F0FF3D]';
+                          return 'bg-gray-400 text-white';
+                        })()}`}
                       >
                         {orden.estado?.toUpperCase()}
                       </span>

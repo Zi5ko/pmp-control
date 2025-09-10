@@ -57,7 +57,13 @@ export default function InicioAdmin() {
     { name: "Pendientes", value: resumen.pendientes }
   ];
 
-  const colores = ["#34D399", "#FBBF24"];
+  const getPieColor = (name = "") => {
+    const n = String(name).toLowerCase();
+    if (n.includes("pendiente")) return "#D3DDE7"; // pendientes
+    if (n.includes("completad") || n.includes("firmad")) return "#003D31"; // completadas/firmadas
+    if (n.includes("realizad") || n.includes("ejecutad")) return "#D6B4FC"; // realizada/ejecutada (por si se usa)
+    return "#E5E7EB"; // gris claro por defecto
+  };
 
   const porcentaje = (parte, total) => total === 0 ? 0 : Math.round((parte / total) * 100);
   const { critico, relevante } = cumplimiento;
@@ -98,10 +104,7 @@ export default function InicioAdmin() {
                   label={({ name }) => `${name}`}
                 >
                   {dataChart.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={index === 0 ? "#10B981" : "#DC2626"} // verde y ámbar
-                    />
+                    <Cell key={`cell-${index}`} fill={getPieColor(entry.name)} />
                   ))}
                 </Pie>
               </PieChart>

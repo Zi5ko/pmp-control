@@ -4,7 +4,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { subirEvidencia, listarEvidencias } = require('../controllers/evidenciasController');
+const { subirEvidencia, listarEvidencias, eliminarEvidencia } = require('../controllers/evidenciasController');
 const { verifyToken } = require('../middlewares/auth');
 
 // Carpeta de destino
@@ -46,5 +46,8 @@ router.get('/descargar/:nombreArchivo', descargarPDF);
 
 // Listar evidencias de una orden
 router.get('/:ordenId', verifyToken, listarEvidencias);
+
+// Eliminar evidencia por id
+router.delete('/:id', verifyToken, eliminarEvidencia);
 
 module.exports = router;

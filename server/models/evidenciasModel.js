@@ -20,7 +20,25 @@ async function obtenerEvidenciasPorOrden(orden_id) {
   return result.rows;
 }
 
+async function obtenerEvidenciaPorId(id) {
+  const result = await db.query(
+    `SELECT * FROM evidencias WHERE id = $1`,
+    [id]
+  );
+  return result.rows[0] || null;
+}
+
+async function eliminarEvidencia(id) {
+  const result = await db.query(
+    `DELETE FROM evidencias WHERE id = $1 RETURNING *`,
+    [id]
+  );
+  return result.rows[0] || null;
+}
+
 module.exports = {
   agregarEvidencia,
-  obtenerEvidenciasPorOrden
+  obtenerEvidenciasPorOrden,
+  obtenerEvidenciaPorId,
+  eliminarEvidencia
 };

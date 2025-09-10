@@ -144,7 +144,7 @@ export default function ValidarOrdenes() {
                 <th className="p-3">Ubicación</th>
                 <th className="p-3">Técnico</th>
                 <th className="p-3">Ejecución</th>
-                <th className="p-3">Evidencias</th>
+                <th className="p-3">Detalle</th>
               </tr>
             </thead>
             <tbody>
@@ -179,10 +179,9 @@ export default function ValidarOrdenes() {
                     {new Date(orden.fecha_ejecucion).toLocaleDateString("es-CL")}
                   </td>
                   <td className="p-3 text-sm text-gray-600">
-                    {orden.total_evidencias} archivo(s)
                     <button
                       onClick={() => verDetalle(orden)}
-                      className="ml-2 bg-[#D0FF34] text-[#111A3A] font-semibold text-xs px-2 py-1 rounded shadow hover:bg-lime-300"
+                      className="ml-0 bg-[#D0FF34] text-[#111A3A] font-semibold text-xs px-2 py-1 rounded shadow hover:bg-lime-300"
                     >
                       Ver
                     </button>

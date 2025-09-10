@@ -1,5 +1,5 @@
 // src/components/ordenes/DetalleOrdenModal.jsx
-import { XCircle } from "lucide-react";
+import { XCircle, ListChecks, User, UserCheck, FileUp } from "lucide-react";
 
 export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
   if (!orden) return null;
@@ -54,21 +54,37 @@ export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
         <h2 className="text-lg font-bold text-[#111A3A] mb-4">Detalle de la OT</h2>
 
         <div className="space-y-4 text-sm text-gray-700">
-          <div>
-            <h3 className="font-semibold text-[#111A3A] mb-1">Tareas realizadas</h3>
-            <p className="whitespace-pre-line">{tareas}</p>
+          <div className="rounded-xl border p-3 bg-[#BADDCF] border-[#19123D]">
+            <h3 className="font-semibold text-[#111A3A] mb-1 flex items-center gap-2">
+              <ListChecks className="w-4 h-4 text-[#19123D]" />
+              Tareas realizadas
+            </h3>
+            <p className="whitespace-pre-line text-gray-800">{tareas}</p>
           </div>
-          <div>
-            <h3 className="font-semibold text-[#111A3A] mb-1">Observaciones</h3>
-            <p className="whitespace-pre-line">{observacion}</p>
+
+          <div className="rounded-xl border p-3 bg-[#E8F3DA] border-[#19123D]">
+            <h3 className="font-semibold text-[#111A3A] mb-1 flex items-center gap-2">
+              <User className="w-4 h-4 text-[#19123D]" />
+              Observaciones del técnico
+            </h3>
+            <p className="whitespace-pre-line text-gray-800">{observacion}</p>
           </div>
-          <div>
-            <h3 className="font-semibold text-[#111A3A] mb-1">Comentario del supervisor</h3>
-            <p className="whitespace-pre-line">{comentarioSupervisor}</p>
+
+          <div className="rounded-xl border p-3 bg-[#6787AF] border-[#19123D]">
+            <div className="flex items-start gap-2 text-white">
+              <UserCheck className="w-4 h-4 text-white mt-0.5" />
+              <div>
+                <div className="font-semibold">Observación del supervisor</div>
+                <p className="whitespace-pre-line">{comentarioSupervisor}</p>
+              </div>
+            </div>
           </div>
 
           <div>
-            <h3 className="font-semibold text-[#111A3A] mb-1">Evidencias</h3>
+            <h3 className="font-semibold text-[#111A3A] mb-1 flex items-center gap-2">
+              <FileUp className="w-4 h-4 text-[#111A3A]" />
+              Evidencias
+            </h3>
             {evidencias.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {evidencias.map((ev, idx) => {

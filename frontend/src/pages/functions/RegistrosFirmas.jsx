@@ -1,8 +1,10 @@
 //frontend/src/pages/functions/RegistrosFirmas.jsx
 import { useEffect, useState } from "react";
 import { getOrdenesValidadas, generarPDF, descargarReportePDF } from "../../services/reportesService";
+import { getEvidenciasPorOrden } from "../../services/evidenciasService";
+import DetalleOrdenModal from "../../components/ordenes/DetalleOrdenModal";
 import FirmaDibujo from "../../components/FirmaDibujo";
-import { Download, XCircle } from "lucide-react";
+import { Download } from "lucide-react";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 
@@ -13,58 +15,14 @@ export default function RegistrosYFirmas() {
   const [ordenes, setOrdenes] = useState([]);
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
   const [ordenDetalle, setOrdenDetalle] = useState(null);
+  const [evidencias, setEvidencias] = useState([]);
   const [firmaServicio, setFirmaServicio] = useState(null);
   const [firmaTecnico, setFirmaTecnico] = useState(null);
   const [generando, setGenerando] = useState(false);
   const [archivoGenerado, setArchivoGenerado] = useState(null);
   const [mensaje, setMensaje] = useState(null);
 
-  const extraerDetalle = (obs) => {
-    const limpiarTexto = (valor, defecto) => {
-      if (!valor) return defecto;
-      if (Array.isArray(valor)) {
-        const texto = valor
-          .map((v) => (typeof v === "string" ? v : v?.descripcion || v?.tarea || ""))
-          .filter(Boolean)
-          .join("\n")
-          .trim();
-        return texto || defecto;
-      }
-      return String(valor).trim() || defecto;
-    };
-
-    if (!obs) {
-      return {
-        tareas: "Sin tareas registradas.",
-        observaciones: "Sin observaciones.",
-        comentarioSupervisor: "Sin comentarios del supervisor.",
-      };
-    }
-
-    if (typeof obs === "object") {
-      return {
-        tareas: limpiarTexto(obs.tareas, "Sin tareas registradas."),
-        observaciones: limpiarTexto(obs.observaciones, "Sin observaciones."),
-        comentarioSupervisor: limpiarTexto(
-          obs.comentarios_supervisor,
-          "Sin comentarios del supervisor."
-        ),
-      };
-    }
-
-    const tareasMatch = obs.match(/Tareas realizadas:\n([\s\S]*?)\n\nObservaciones:/);
-    const observacionesMatch = obs.match(/Observaciones:\n([\s\S]*?)(?:\n\nComentarios del supervisor:|$)/);
-    const comentariosMatch = obs.match(/Comentarios del supervisor:\n([\s\S]*)/);
-    return {
-      tareas: tareasMatch ? tareasMatch[1].trim() : "Sin tareas registradas.",
-      observaciones: observacionesMatch
-        ? observacionesMatch[1].trim()
-        : "Sin observaciones.",
-      comentarioSupervisor: comentariosMatch
-        ? comentariosMatch[1].trim()
-        : "Sin comentarios del supervisor.",
-    };
-  };
+  // Se usa el mismo modal de Validar Mantenimientos (DetalleOrdenModal)
 
   const fetchOrdenes = async () => {
     try {
@@ -130,7 +88,16 @@ export default function RegistrosYFirmas() {
     }
   };
 
-  const detalle = ordenDetalle ? extraerDetalle(ordenDetalle.observaciones) : null;
+  const verDetalle = async (orden) => {
+    setOrdenDetalle(orden);
+    try {
+      const data = await getEvidenciasPorOrden(orden.id);
+      setEvidencias(data);
+    } catch (error) {
+      console.error("Error al obtener evidencias:", error);
+      setEvidencias([]);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -181,9 +148,9 @@ export default function RegistrosYFirmas() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setOrdenDetalle(orden);
+                        verDetalle(orden);
                       }}
-                      className="text-blue-600 hover:underline"
+                      className="ml-2 bg-[#D0FF34] text-[#111A3A] font-semibold text-xs px-2 py-1 rounded shadow hover:bg-lime-300"
                     >
                       Ver
                     </button>
@@ -246,30 +213,12 @@ export default function RegistrosYFirmas() {
         </div>
       </div>
 
-      {detalle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-md relative">
-            <button
-              className="absolute top-4 right-4 text-[#111A3A] hover:text-gray-600"
-              onClick={() => setOrdenDetalle(null)}
-            >
-              <XCircle size={20} />
-            </button>
-            <h2 className="text-lg font-bold text-[#111A3A] mb-4">Detalles de la orden</h2>
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Tareas realizadas</h3>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.tareas}</p>
-            </div>
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Observaciones</h3>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.observaciones}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Comentario del supervisor</h3>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{detalle.comentarioSupervisor}</p>
-            </div>
-          </div>
-        </div>
+      {ordenDetalle && (
+        <DetalleOrdenModal
+          orden={ordenDetalle}
+          evidencias={evidencias}
+          onClose={() => setOrdenDetalle(null)}
+        />
       )}
     </div>
   );

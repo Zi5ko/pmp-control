@@ -7,17 +7,16 @@ import ModalEjecutarOrden from "../ordenes/ModalEjecutarOrden";
 import { XCircle, Flag } from "lucide-react";
 
 const getEstadoColor = (estado = "") => {
-  const colores = {
-    pendiente: "bg-yellow-200 text-yellow-800",
-    reprogramada: "bg-orange-200 text-orange-800",
-    firmada: "bg-indigo-200 text-indigo-800",
-    validada: "bg-green-200 text-green-800",
-    completada: "bg-green-200 text-green-800",
-    realizada: "bg-green-200 text-green-800",
-    cancelada: "bg-red-200 text-red-800",
-    proyectado: "bg-gray-200 text-gray-700",
-  };
-  return colores[estado?.toLowerCase()] || "bg-gray-200 text-gray-700";
+  const e = (estado || "").toLowerCase();
+  // Paleta unificada
+  if (e === "pendiente") return "bg-[#D3DDE7] text-[#19123D]";
+  if (e === "realizada" || e === "ejecutada") return "bg-[#D6B4FC] text-[#19123D]";
+  if (e === "firmada" || e === "completada" || e === "completadas") return "bg-[#003D31] text-[#F0FF3D]";
+  if (e === "validada") return "bg-[#273287] text-[#F0FF3D]";
+  if (e === "reprogramada") return "bg-orange-200 text-orange-800";
+  if (e === "cancelada") return "bg-red-200 text-red-800";
+  if (e === "proyectado") return "bg-gray-200 text-gray-700";
+  return "bg-gray-200 text-gray-700";
 };
 
 export default function EventModal({ evento, onClose }) {
