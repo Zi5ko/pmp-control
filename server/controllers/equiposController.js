@@ -8,6 +8,18 @@ exports.registrarEquipo = async (req, res) => {
   const fecha_ingreso = new Date().toISOString().split("T")[0];
 
   try {
+    const criticidadNormalizada = criticidad ? String(criticidad).trim().toLowerCase() : null;
+    // Validar criticidad contra las opciones soportadas por el frontend
+    const opcionesCriticidad = [
+      "crítico",
+      "relevante",
+      "instalación relevante",
+      "equipo ni crítico ni relevante",
+      "instalación no relevante",
+    ];
+    if (criticidad && !opcionesCriticidad.includes(criticidadNormalizada)) {
+      return res.status(400).json({ error: "Valor de criticidad no válido" });
+    }
     const existe = await db.query(`
       SELECT 1 FROM equipos
       WHERE marca = $1 AND modelo = $2 AND serie = $3
@@ -21,7 +33,7 @@ exports.registrarEquipo = async (req, res) => {
       INSERT INTO equipos (nombre, familia, criticidad, ubicacion, marca, modelo, serie, fecha_ingreso, plan_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *`,
-      [nombre, familia, criticidad, ubicacion, marca, modelo, serie, fecha_ingreso, plan_id]);
+      [nombre, familia, criticidadNormalizada, ubicacion, marca, modelo, serie, fecha_ingreso, plan_id]);
 
     return res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -51,9 +63,9 @@ exports.resumenEquipos = async (_req, res) => {
     const result = await db.query(`
       SELECT
         COUNT(*) AS total_equipos,
-        COUNT(*) FILTER (WHERE criticidad = 'Crítico') AS criticos,
-        COUNT(*) FILTER (WHERE criticidad = 'Relevante') AS relevantes,
-        COUNT(*) FILTER (WHERE criticidad = 'Instalación relevante') AS instalaciones_relevantes
+        COUNT(*) FILTER (WHERE criticidad = 'crítico') AS criticos,
+        COUNT(*) FILTER (WHERE criticidad = 'relevante') AS relevantes,
+        COUNT(*) FILTER (WHERE criticidad = 'instalación relevante') AS instalaciones_relevantes
       FROM equipos
     `);
     res.json(result.rows[0]);

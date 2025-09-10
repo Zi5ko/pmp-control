@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
 import FloatingBanner from "../FloatingBanner";
 import ModalEjecutarOrden from "../ordenes/ModalEjecutarOrden";
-import { XCircle, Flag } from "lucide-react";
+import { XCircle, Flag, Hash } from "lucide-react";
 
 const getEstadoColor = (estado = "") => {
   const e = (estado || "").toLowerCase();
@@ -17,6 +17,16 @@ const getEstadoColor = (estado = "") => {
   if (e === "cancelada") return "bg-red-200 text-red-800";
   if (e === "proyectado") return "bg-gray-200 text-gray-700";
   return "bg-gray-200 text-gray-700";
+};
+
+// Colores para la criticidad (alineado al resto de modales)
+const getCriticidadColor = (crit = "") => {
+  if (!crit) return "bg-gray-300 text-[#19123D]";
+  const key = crit.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (key.includes("critico")) return "bg-[#FF7144] text-white"; // Crítico
+  if (key.startsWith("relevante") || key === "relevante") return "bg-[#334ED8] text-[#F0FF3D]"; // Relevante
+  if (key.includes("instalacion")) return "bg-[#D8E6FF] text-[#19123D]"; // Instalaciones relevantes
+  return "bg-gray-300 text-[#19123D]";
 };
 
 export default function EventModal({ evento, onClose }) {
@@ -55,9 +65,18 @@ export default function EventModal({ evento, onClose }) {
             <XCircle size={20} />
           </button>
 
-          <h2 className="text-lg font-bold text-[#111A3A] mb-2">
-            {evento.title || "Mantenimiento"}
-          </h2>
+          {/* Encabezado con OT sobre el nombre del equipo */}
+          <div className="mb-2">
+            {!esProyectado && evento.id && (
+              <span className="inline-flex items-center rounded-full bg-[#19123D] text-white text-xs font-semibold px-3 py-1 select-none">
+                <Hash className="w-3.5 h-3.5 mr-1" />
+                {`OT${String(evento.id).padStart(4, "0")}`}
+              </span>
+            )}
+            <h2 className="mt-2 text-lg font-bold text-[#111A3A]">
+              {evento.title || "Mantenimiento"}
+            </h2>
+          </div>
 
           <div className="space-y-2 text-sm text-gray-700">
             <div className="flex justify-between items-center">
@@ -67,20 +86,22 @@ export default function EventModal({ evento, onClose }) {
               </span>
             </div>
 
-            {!esProyectado && evento.id && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">OT registrada</span>
-                <span>#{evento.id}</span>
-              </div>
-            )}
+            {/* Criticidad bajo el estado, con formato de chip y colores de criticidad */}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Criticidad</span>
+              <span className={`px-3 py-0.5 rounded-full text-sm font-semibold ${getCriticidadColor(evento.criticidad)}`}>
+                {evento.criticidad || "-"}
+              </span>
+            </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-gray-500">Responsable</span>
               {evento.responsable ? (
                 <span>{evento.responsable}</span>
               ) : (
-                <span className="text-red-600 flex items-center gap-1">
-                  <Flag size={12} /> Falta asignación
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-semibold bg-[#FFE8D2] text-[#19123D]">
+                  <Flag size={12} className="mr-1" />
+                  Falta asignación
                 </span>
               )}
             </div>
@@ -103,11 +124,6 @@ export default function EventModal({ evento, onClose }) {
             <div className="flex justify-between">
               <span className="text-gray-500">Serie</span>
               <span>{evento.serie || "-"}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-gray-500">Criticidad</span>
-              <span>{evento.criticidad || "-"}</span>
             </div>
 
             <div className="flex justify-between">

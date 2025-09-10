@@ -144,16 +144,34 @@ export default function InicioAdmin() {
 
             <div className="mb-4">
               <p className="text-sm font-medium text-[#111A3A]">Equipos Críticos</p>
-              <div className="w-full bg-gray-200 rounded h-3 mt-1">
-                <div className="bg-green-500 h-3 rounded" style={{ width: `${porcentaje(critico.firmadas, critico.total)}%` }}></div>
+              <div className="w-full bg-gray-200 rounded h-3 mt-1 overflow-hidden">
+                <div
+                  className="h-3 rounded flex items-center justify-center text-[10px] font-semibold"
+                  style={{
+                    width: `${porcentaje(critico.firmadas, critico.total)}%`,
+                    backgroundColor: '#FF7144',
+                    color: '#FFFFFF'
+                  }}
+                >
+                  Crítico
+                </div>
               </div>
               <p className="text-xs text-gray-500 mt-1">{critico.firmadas} de {critico.total} firmadas</p>
             </div>
 
             <div>
               <p className="text-sm font-medium text-[#111A3A]">Equipos Relevantes</p>
-              <div className="w-full bg-gray-200 rounded h-3 mt-1">
-                <div className="bg-blue-500 h-3 rounded" style={{ width: `${porcentaje(relevante.firmadas, relevante.total)}%` }}></div>
+              <div className="w-full bg-gray-200 rounded h-3 mt-1 overflow-hidden">
+                <div
+                  className="h-3 rounded flex items-center justify-center text-[10px] font-semibold"
+                  style={{
+                    width: `${porcentaje(relevante.firmadas, relevante.total)}%`,
+                    backgroundColor: '#334ED8',
+                    color: '#F0FF3D'
+                  }}
+                >
+                  Relevante
+                </div>
               </div>
               <p className="text-xs text-gray-500 mt-1">{relevante.firmadas} de {relevante.total} firmadas</p>
             </div>

@@ -18,13 +18,17 @@ const {
 } = require('../models/ordenesModel');
 
 const { crearLog } = require('../models/logsAuditoriaModel');
+const ExcelJS = require('exceljs');
 
 const FRECUENCIA_SEMANAS = {
   mensual: 4,
-  trimestral: 12,
-  semestral: 24,
+  trimestral: 13,
+  semestral: 26,
   anual: 52
 };
+
+// Normaliza claves de frecuencia para consulta segura en FRECUENCIA_SEMANAS
+const normalizarFrecuencia = (f) => String(f || "").toLowerCase().trim();
 
 // 1. Listar todas las órdenes
 async function listarOrdenes(req, res) {
@@ -185,7 +189,7 @@ async function calendarizarMantenimientos(req, res) {
     let totalOrdenes = 0;
 
     for (const equipo of equipos) {
-      const semanas = FRECUENCIA_SEMANAS[equipo.frecuencia];
+      const semanas = FRECUENCIA_SEMANAS[normalizarFrecuencia(equipo.frecuencia)];
       if (!semanas) continue;
 
       const fecha = new Date();
@@ -263,7 +267,7 @@ async function ejecutarOrden(req, res) {
     `, [plan_id]);
 
     const frecuencia = frecuenciaResult.rows[0].frecuencia;
-    const semanas = FRECUENCIA_SEMANAS[frecuencia];
+    const semanas = FRECUENCIA_SEMANAS[normalizarFrecuencia(frecuencia)];
     if (!semanas) throw new Error("Frecuencia inválida");
 
     const proximaFecha = new Date(fecha_programada);
@@ -411,7 +415,8 @@ async function asignarResponsableOrden(req, res) {
 async function obtenerHistorial(req, res) {
   try {
     const user = req.user;
-    const historial = await obtenerHistorialOrdenes(user);
+    // Nota: usamos firma correcta de modelo para aplicar filtro por rol si corresponde
+    const historial = await obtenerHistorialOrdenes(user.sub, user.rol_id);
     res.json(historial);
   } catch (error) {
     console.error("❌ Error al obtener historial:", error);
@@ -623,7 +628,7 @@ async function obtenerEventosCalendario(req, res) {
       `);
 
       for (const eq of ultimasOTs) {
-        const semanas = FRECUENCIA_SEMANAS[eq.frecuencia];
+        const semanas = FRECUENCIA_SEMANAS[normalizarFrecuencia(eq.frecuencia)];
         if (!semanas || !eq.ultima_fecha) continue;
 
         const fechaBase = new Date(eq.ultima_fecha);
@@ -715,3 +720,55 @@ module.exports = {
   obtenerEventosCalendario,
   obtenerCumplimientoPorCriticidad
 };
+
+// Exportar historial técnico a Excel
+async function exportarHistorialExcel(req, res) {
+  try {
+    const user = req.user;
+    const historial = await obtenerHistorialOrdenes(user.sub, user.rol_id);
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Historial Técnico');
+
+    sheet.columns = [
+      { header: 'OT', key: 'ot', width: 10 },
+      { header: 'ID Equipo', key: 'equipo_id', width: 12 },
+      { header: 'Equipo', key: 'equipo_nombre', width: 30 },
+      { header: 'Estado', key: 'estado', width: 12 },
+      { header: 'Fecha Ejecución', key: 'fecha_ejecucion', width: 20 },
+      { header: 'Responsable', key: 'tecnico_nombre', width: 25 },
+      { header: 'Criticidad', key: 'criticidad', width: 14 },
+      { header: 'Ubicación', key: 'ubicacion', width: 25 },
+      { header: 'Serie', key: 'equipo_serie', width: 20 },
+      { header: 'Evidencias', key: 'evidencias', width: 12 },
+    ];
+
+    historial.forEach((o) => {
+      const evCount = Array.isArray(o.evidencias) ? o.evidencias.length : 0;
+      sheet.addRow({
+        ot: o.id,
+        equipo_id: o.equipo_id,
+        equipo_nombre: o.equipo_nombre || '',
+        estado: o.estado || '',
+        fecha_ejecucion: o.fecha_ejecucion ? new Date(o.fecha_ejecucion).toISOString().replace('T', ' ').slice(0, 19) : '',
+        tecnico_nombre: o.tecnico_nombre || '',
+        criticidad: o.criticidad || '',
+        ubicacion: o.ubicacion || '',
+        equipo_serie: o.equipo_serie || '',
+        evidencias: evCount,
+      });
+    });
+
+    const filename = `historial_tecnico_${Date.now()}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('❌ Error al exportar historial técnico a Excel:', error);
+    res.status(500).json({ error: 'Error al exportar historial técnico a Excel' });
+  }
+}
+
+module.exports.exportarHistorialExcel = exportarHistorialExcel;

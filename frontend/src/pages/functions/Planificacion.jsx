@@ -8,6 +8,7 @@ import FloatingBanner from "../../components/FloatingBanner";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
+import PlanesManager from "../../components/PlanesManager";
 
 export default function Planificacion() {
   const [eventosTotales, setEventosTotales] = useState([]);
@@ -30,6 +31,8 @@ export default function Planificacion() {
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const basePath = getRutaPorRol(user?.rol_nombre);
+  const canPlan = [1, 5, 6].includes(Number(user?.rol_id));
+  const [abrirPlanes, setAbrirPlanes] = useState(false);
 
   // 👉 Cargar eventos
   const fetchEventos = async () => {
@@ -71,9 +74,23 @@ export default function Planificacion() {
   };
 
   // 👉 Aplicar filtros por criticidad
+  const normalizar = (txt = "") =>
+    String(txt)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "");
+
+  const mapCriticidad = (c = "") => {
+    const v = normalizar(c);
+    if (v.includes("instalacion")) return "instalación";
+    if (v === "critico") return "crítico";
+    if (v === "relevante") return "relevante";
+    return v || "otros";
+  };
+
   const aplicarFiltroCriticidad = () => {
     const activos = Object.keys(filtrosCriticidad).filter(c => filtrosCriticidad[c]);
-    const filtrados = eventosTotales.filter(ev => activos.includes(ev.criticidad));
+    const filtrados = eventosTotales.filter(ev => activos.includes(mapCriticidad(ev.criticidad)));
     setEventosFiltrados(filtrados);
   };
 
@@ -152,6 +169,18 @@ export default function Planificacion() {
             </ul>
           </div>
 
+          {/* Botón crear plan (debajo del filtro, antes de equipos pendientes si aplica) */}
+          {canPlan && (
+            <div>
+              <button
+                onClick={() => setAbrirPlanes(true)}
+                className="w-full bg-[#D0FF34] text-[#111A3A] text-sm font-semibold px-4 py-2 rounded shadow hover:opacity-90"
+              >
+                Crear plan de mantenimiento
+              </button>
+            </div>
+          )}
+
           {/* Equipos faltantes */}
           {faltantes.length > 0 && (
             <div className="bg-[#5C7BA1] rounded-xl shadow p-4 text-white">
@@ -212,6 +241,13 @@ export default function Planificacion() {
       {/* ❌ ERROR */}
       {mostrarError && (
         <ErrorBanner mensaje={mensajeError} onClose={() => setMostrarError(false)} />
+      )}
+
+      {abrirPlanes && (
+        <PlanesManager
+          onClose={() => setAbrirPlanes(false)}
+          onPlanCreated={() => { /* se autogestiona */ }}
+        />
       )}
     </>
   );

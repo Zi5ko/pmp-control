@@ -45,9 +45,23 @@ export default function Calendario() {
     }
   };
 
+  const normalizar = (txt = "") =>
+    String(txt)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "");
+
+  const mapCriticidad = (c = "") => {
+    const v = normalizar(c);
+    if (v.includes("instalacion")) return "instalación";
+    if (v === "critico") return "crítico";
+    if (v === "relevante") return "relevante";
+    return v || "otros";
+  };
+
   const aplicarFiltroCriticidad = () => {
     const activos = Object.keys(filtrosCriticidad).filter((c) => filtrosCriticidad[c]);
-    const filtrados = eventos.filter((ev) => activos.includes(ev.criticidad));
+    const filtrados = eventos.filter((ev) => activos.includes(mapCriticidad(ev.criticidad)));
     setEventosFiltrados(filtrados);
   };
 
@@ -99,4 +113,3 @@ export default function Calendario() {
     </div>
   );
 }
-

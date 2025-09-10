@@ -130,6 +130,7 @@ async function obtenerHistorialOrdenes(usuario_id, rol_id) {
            e.nombre AS equipo_nombre, 
            e.ubicacion,
            e.serie AS equipo_serie,
+           e.criticidad AS criticidad,
            u.nombre AS tecnico_nombre,
            COALESCE(json_agg(json_build_object('url', ev.url, 'tipo', ev.tipo, 'subido_por', ev.subido_por)) 
                     FILTER (WHERE ev.id IS NOT NULL), '[]') AS evidencias
@@ -148,7 +149,7 @@ async function obtenerHistorialOrdenes(usuario_id, rol_id) {
   }
 
   query += `
-    GROUP BY ot.id, e.nombre, e.ubicacion, e.serie, u.nombre
+    GROUP BY ot.id, e.nombre, e.ubicacion, e.serie, e.criticidad, u.nombre
     ORDER BY ot.fecha_ejecucion DESC
   `;
 

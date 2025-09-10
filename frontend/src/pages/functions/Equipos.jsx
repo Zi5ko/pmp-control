@@ -5,6 +5,7 @@ import axios from "axios";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
 import { Tag, Wrench, Package, MapPin, ShieldCheck, ListChecks } from "lucide-react";
+import PlanesManager from "../../components/PlanesManager";
 
 const opcionesCriticidad = [
   "crítico",
@@ -37,6 +38,7 @@ export default function Equipos() {
 
   const [planes, setPlanes] = useState([]);
   const [mensaje, setMensaje] = useState(null);
+  const [abrirPlanes, setAbrirPlanes] = useState(false);
 
   useEffect(() => {
     axios
@@ -130,6 +132,7 @@ export default function Equipos() {
                 value={form.familia}
                 onChange={handleChange}
                 required
+                maxLength={50}
                 className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
               />
             </div>
@@ -145,6 +148,7 @@ export default function Equipos() {
                 value={form.marca}
                 onChange={handleChange}
                 required
+                maxLength={50}
                 className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
               />
             </div>
@@ -160,6 +164,7 @@ export default function Equipos() {
                 value={form.modelo}
                 onChange={handleChange}
                 required
+                maxLength={50}
                 className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
               />
             </div>
@@ -175,6 +180,7 @@ export default function Equipos() {
                 value={form.ubicacion}
                 onChange={handleChange}
                 required
+                maxLength={100}
                 className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
               />
             </div>
@@ -190,6 +196,7 @@ export default function Equipos() {
                 value={form.serie}
                 onChange={handleChange}
                 required
+                maxLength={50}
                 className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
               />
             </div>
@@ -231,6 +238,16 @@ export default function Equipos() {
                 ))}
               </select>
             </div>
+            {/* Botón crear plan debajo, alineado a la izquierda */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setAbrirPlanes(true)}
+                className="bg-[#D0FF34] text-[#111A3A] text-sm font-semibold px-4 py-1.5 rounded shadow hover:opacity-90"
+              >
+                Crear plan de mantenimiento
+              </button>
+            </div>
           </div>
         </div>
 
@@ -243,6 +260,17 @@ export default function Equipos() {
           </button>
         </div>
       </form>
+      {abrirPlanes && (
+        <PlanesManager
+          onClose={() => setAbrirPlanes(false)}
+          onPlanCreated={async () => {
+            try {
+              const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/planes`);
+              setPlanes(data);
+            } catch (_) { /* no-op */ }
+          }}
+        />
+      )}
     </div>
   );
 }

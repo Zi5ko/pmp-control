@@ -29,13 +29,21 @@ CREATE TABLE IF NOT EXISTS equipos (
   id SERIAL PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   familia VARCHAR(50),
-  criticidad VARCHAR(20) CHECK (criticidad IN ('baja', 'media', 'alta')),
+  criticidad VARCHAR(50) CHECK (
+    criticidad IN (
+      'crítico',
+      'relevante',
+      'instalación relevante',
+      'equipo ni crítico ni relevante',
+      'instalación no relevante'
+    )
+  ),
   ubicacion VARCHAR(100),
   marca VARCHAR(50),
   modelo VARCHAR(50),
   serie VARCHAR(50) UNIQUE,
   fecha_ingreso DATE DEFAULT CURRENT_DATE,
-  fuente_plan VARCHAR(20) NOT NULL CHECK (fuente_plan IN ('garantia', 'contrato', 'interno')),
+  fuente_plan VARCHAR(20) CHECK (fuente_plan IN ('garantia', 'contrato', 'interno')),
   plan_id INTEGER REFERENCES planes_mantenimiento(id)
 );
 
@@ -120,4 +128,3 @@ INSERT INTO planes_mantenimiento (nombre, tipo, frecuencia, protocolo_base, acti
   ('PMP Garantía estándar', 'externo', 'semestral', 'Supervisión del proveedor según condiciones de garantía', TRUE),
   ('PMP Contrato externo', 'externo', 'trimestral', 'Supervisión técnica mediante contrato vigente externo', TRUE)
 ON CONFLICT (nombre) DO NOTHING;
-

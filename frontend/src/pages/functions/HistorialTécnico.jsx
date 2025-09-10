@@ -43,6 +43,16 @@ export default function HistorialTecnico() {
 
   const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
+  // Colores de criticidad
+  const getCriticidadClasses = (crit) => {
+    if (!crit) return "bg-gray-300 text-[#19123D]";
+    const key = crit.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (key.includes("critico")) return "bg-[#FF7144] text-white"; // Crítico: fondo FF7144, texto blanco
+    if (key.startsWith("relevante") || key === "relevante") return "bg-[#334ED8] text-[#F0FF3D]"; // Relevante
+    if (key.includes("instalacion")) return "bg-[#D8E6FF] text-[#19123D]"; // Instalaciones
+    return "bg-gray-300 text-[#19123D]";
+  };
+
   const ordenesFiltradas = ordenes
     .filter((o) => {
       if (estadoFiltro === "todas") return true;
@@ -118,14 +128,19 @@ export default function HistorialTecnico() {
                   {otLabel}
                 </div>
 
-                {/* Nombre del equipo: más pequeño pero destacado */}
+                {/* Nombre del equipo */}
                 <h2 className="text-base md:text-lg font-bold text-[#111A3A] pr-28">{orden.equipo_nombre || "Equipo sin nombre"}</h2>
 
-                {/* Fecha de ejecución en casilla */}
-                <div className="mt-1">
+                {/* Chips: Fecha de ejecución y Criticidad del equipo */}
+                <div className="mt-1 flex flex-wrap gap-2 items-center">
                   <span className="inline-block rounded-full bg-[#6787AF] text-white text-xs font-semibold px-3 py-1">
                     {orden.fecha_ejecucion?.slice(0, 10) || "Fecha no registrada"}
                   </span>
+                  {orden.criticidad && (
+                    <span className={`inline-block rounded-full text-xs font-semibold px-3 py-1 ${getCriticidadClasses(orden.criticidad)}`}>
+                      {orden.criticidad}
+                    </span>
+                  )}
                 </div>
 
                 {/* Info del equipo y técnico */}
@@ -151,7 +166,7 @@ export default function HistorialTecnico() {
                           href={`${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-lime-400 hover:bg-lime-500 text-[#111A3A] px-4 py-1.5 rounded-full text-xs font-semibold transition"
+                          className="bg-[#D0FF34] text-[#111A3A] px-4 py-1.5 rounded-full text-xs font-semibold transition"
                         >
                           {etiqueta}
                         </a>

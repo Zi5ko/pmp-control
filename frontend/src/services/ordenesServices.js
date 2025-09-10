@@ -43,3 +43,8 @@ export const getHistorialOrdenes = async () => {
   const response = await api.get("/ordenes/historial");
   return response.data;
 };
+
+export const exportarHistorialExcel = async () => {
+  const response = await api.get("/ordenes/historial/excel", { responseType: "blob" });
+  return response.data; // Blob
+};

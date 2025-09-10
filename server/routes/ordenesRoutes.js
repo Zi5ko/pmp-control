@@ -25,7 +25,8 @@ const {
   obtenerOrdenesValidadas,
   generarPDF,
   obtenerEventosCalendario,
-  obtenerCumplimientoPorCriticidad
+  obtenerCumplimientoPorCriticidad,
+  exportarHistorialExcel
 } = require('../controllers/ordenesController');
 
 // Rutas principales
@@ -70,6 +71,7 @@ router.get('/pendientes-asignadas', verifyToken, obtenerOrdenesPendientesAsignad
 router.get('/pendientes-sin-responsable', verifyToken, obtenerOrdenesSinResponsable);
 router.put('/:id/asignar', verifyToken, asignarResponsableOrden);
 router.get('/historial', verifyToken, obtenerHistorial);
+router.get('/historial/excel', verifyToken, exportarHistorialExcel);
 router.post('/:id/generar-reporte', verifyToken, generarPDF);
 router.get('/:id/reporte', obtenerReporteFirmado);
 router.get("/validadas", obtenerOrdenesValidadas);

@@ -37,16 +37,23 @@ export default function WeekView({ fechaActual, eventos, onEventClick }) {
             {/* Eventos del día */}
             <div className="mt-8 space-y-1 text-xs">
               {eventosDelDia.length > 0 ? (
-                eventosDelDia.map((ev, idx) => (
+                eventosDelDia.map((ev, idx) => {
+                  const crit = String(ev.criticidad || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/\p{Diacritic}/gu, "");
+                  return (
                   <div
                     key={ev.id || idx}
                     onClick={() => onEventClick(ev)}
                     title={ev.title}
                     className={`rounded px-2 py-1 cursor-pointer text-xs leading-snug line-clamp-3 break-words overflow-hidden ${
-                      ev.criticidad === "crítico"
-                        ? "bg-[#E01D00] text-white"
-                        : ev.criticidad === "relevante"
-                        ? "bg-[#FFC700] text-black"
+                      crit === "critico"
+                        ? "bg-[#FF7144] text-white"
+                        : crit === "relevante"
+                        ? "bg-[#334ED8] text-[#F0FF3D]"
+                        : crit.includes("instalacion")
+                        ? "bg-[#D8E6FF] text-[#19123D]"
                         : "bg-[#C4C4C4] text-black"
                     }`}
                   >
@@ -54,7 +61,7 @@ export default function WeekView({ fechaActual, eventos, onEventClick }) {
                       ID{String(ev.equipo_id).padStart(4, '0')} - {ev.title}
                     </span>
                   </div>
-                ))
+                )})
               ) : (
                 <p className="text-[10px] text-gray-400">Sin tareas</p>
               )}

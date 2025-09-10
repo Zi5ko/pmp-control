@@ -59,13 +59,13 @@ const Alertas = () => {
                     </td>
                     <td className="px-4 py-3">{alerta.ubicacion || "No especificada"}</td>
                     <td className="px-4 py-3 font-semibold">
-                      {alerta.criticidad === "crítico" ? (
-                        <span className="text-red-600">Crítico</span>
-                      ) : alerta.criticidad === "relevante" ? (
-                        <span className="text-yellow-600">Relevante</span>
-                      ) : (
-                        <span className="text-gray-600">No relevante</span>
-                      )}
+                      {(() => {
+                        const c = String(alerta.criticidad || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+                        if (c === "critico") return <span className="px-2 py-0.5 rounded-full bg-[#FF7144] text-white">Crítico</span>;
+                        if (c === "relevante") return <span className="px-2 py-0.5 rounded-full bg-[#334ED8] text-[#F0FF3D]">Relevante</span>;
+                        if (c.includes("instalacion")) return <span className="px-2 py-0.5 rounded-full bg-[#D8E6FF] text-[#19123D]">Instalación</span>;
+                        return <span className="text-gray-600">No relevante</span>;
+                      })()}
                     </td>
                     <td className="px-4 py-3">{alerta.mensaje}</td>
                     <td className="px-4 py-3">{fechaFormateada}</td>

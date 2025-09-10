@@ -1,7 +1,7 @@
 // frontend/src/pages/functions/Auditoria.jsx
 import { useEffect, useState } from "react";
-import { obtenerLogs } from "../../services/logsService";
-import { getHistorialOrdenes } from "../../services/ordenesServices";
+import { obtenerLogs, exportarLogsExcel } from "../../services/logsService";
+import { getHistorialOrdenes, exportarHistorialExcel } from "../../services/ordenesServices";
 
 const Auditoria = () => {
   const [logs, setLogs] = useState([]);
@@ -39,6 +39,35 @@ const Auditoria = () => {
     fetchLogs();
     fetchHistorial();
   }, []);
+
+  const descargarBlob = (blob, nombreBase) => {
+    const url = URL.createObjectURL(new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${nombreBase}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportLogs = async () => {
+    try {
+      const blob = await exportarLogsExcel();
+      descargarBlob(blob, 'logs_auditoria');
+    } catch (err) {
+      console.error('Error al exportar logs a Excel:', err);
+    }
+  };
+
+  const handleExportHistorial = async () => {
+    try {
+      const blob = await exportarHistorialExcel();
+      descargarBlob(blob, 'historial_tecnico');
+    } catch (err) {
+      console.error('Error al exportar historial a Excel:', err);
+    }
+  };
 
   const usuariosUnicos = [...new Set(logs.map(log => log.usuario).filter(Boolean))];
   const tablasUnicas = [...new Set(logs.map(log => log.tabla_afectada).filter(Boolean))];
@@ -165,7 +194,10 @@ const Auditoria = () => {
         <p className="text-sm text-gray-500">No hay acciones de auditoría que coincidan con el filtro.</p>
       ) : (
         <ul className="space-y-2 text-sm text-gray-800">
-          <h2 className="text-xl text-[#111A3A] mb-6">Acciones de auditoría</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl text-[#111A3A]">Acciones de auditoría</h2>
+            <button onClick={handleExportLogs} className="px-3 py-1 text-sm rounded-full bg-[#D0FF34] text-[#111A3A] font-semibold">Descargar Excel</button>
+          </div>
           {logsPaginados.map((log) => {
             const fechaFormateada = new Date(log.fecha).toLocaleDateString("es-CL", {
               year: "numeric",
@@ -206,7 +238,10 @@ const Auditoria = () => {
 
       {/* Historial técnico */}
       <div className="mt-10">
-        <h2 className="text-xl text-[#111A3A] mb-4">Historial técnico</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl text-[#111A3A]">Historial técnico</h2>
+          <button onClick={handleExportHistorial} className="px-3 py-1 text-sm rounded-full bg-[#D0FF34] text-[#111A3A] font-semibold">Descargar Excel</button>
+        </div>
         <div className="flex flex-wrap gap-4 mb-4 text-sm">
           <input
             type="text"
