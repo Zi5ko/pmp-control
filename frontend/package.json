@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "vitest run --environment jsdom"
+    "test": "vitest run --environment jsdom",
+    "build": "vite build"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
