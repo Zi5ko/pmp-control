@@ -6,7 +6,7 @@ export const descargarEvidencia = async (ruta) => {
   const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
   const response = await fetch(
-    `${baseUrl}/uploads/${ruta.replace(/^\\/|^uploads\\//, "")}`,
+    `${baseUrl}/uploads/${ruta.replace(/^\/|^uploads\//, "")}`
     {
       headers: {
         Authorization: `Bearer ${token}`,
