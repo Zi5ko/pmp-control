@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHistorialOrdenes } from "../../services/ordenesServices";
+import { descargarReportePDF } from "../../services/reportesService";
+import { descargarEvidencia } from "../../services/evidenciasService";
 import {
   FileText,
   Image,
@@ -41,33 +43,26 @@ export default function HistorialTecnico() {
     return <FileText className="w-4 h-4" />;
   };
 
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-
-  // Colores de criticidad
-  const getCriticidadClasses = (crit) => {
-    if (!crit) return "bg-gray-300 text-[#19123D]";
-    const key = crit.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (key.includes("critico")) return "bg-[#FF7144] text-white"; // Crítico: fondo FF7144, texto blanco
-    if (key.startsWith("relevante") || key === "relevante") return "bg-[#334ED8] text-[#F0FF3D]"; // Relevante
-    if (key.includes("instalacion")) return "bg-[#D8E6FF] text-[#19123D]"; // Instalaciones
-    return "bg-gray-300 text-[#19123D]";
+  const handleDescargarPDF = async (ordenId) => {
+    try {
+      const nombreArchivo = `reporte_orden_${ordenId}.pdf`;
+      await descargarReportePDF(nombreArchivo);
+    } catch (err) {
+      alert("No se pudo descargar el PDF.");
+    }
   };
 
-  const ordenesFiltradas = ordenes
-    .filter((o) => {
-      if (estadoFiltro === "todas") return true;
-      return o.estado === estadoFiltro;
-    })
-    .sort((a, b) => {
-      const da = a?.fecha_ejecucion ? new Date(a.fecha_ejecucion) : new Date(0);
-      const db = b?.fecha_ejecucion ? new Date(b.fecha_ejecucion) : new Date(0);
-      return db - da;
-    });
-
-  const estados = [
-    { label: "Firmadas", value: "firmada" },
-    { label: "Validadas", value: "validada" },
-  ];
+  const handleVerEvidencia = async (ruta) => {
+    try {
+      const blob = await descargarEvidencia(ruta);
+      const fileUrl = URL.createObjectURL(blob);
+      window.open(fileUrl, "_blank");
+      URL.revokeObjectURL(fileUrl);
+    } catch (err) {
+      console.error("Error al abrir evidencia:", err);
+      alert("No se pudo abrir la evidencia.");
+    }
+  };
 
   return (
     <div className="p-6">
@@ -101,82 +96,58 @@ export default function HistorialTecnico() {
       {ordenesFiltradas.length === 0 ? (
         <p className="text-sm text-gray-500">No se encontraron mantenimientos ejecutados.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {ordenesFiltradas.map((orden) => {
-            const otLabel = `OT${String(orden.id).padStart(4, "0")}`;
-            const idEquipoLabel = `ID${String(orden.equipo_id).padStart(4, "0")}`;
+        <div className="grid gap-4">
+          {ordenes.map((orden) => (
+            <div key={orden.id} className="border rounded-lg p-4 bg-white shadow">
+              <p className="text-sm text-gray-700">
+                <strong>Equipo:</strong> {orden.equipo_nombre || "Sin nombre"}
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong>Ubicación:</strong> {orden.ubicacion || "No especificada"}
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong>Fecha ejecución:</strong> {orden.fecha_ejecucion?.slice(0, 10) || "No registrada"}
+              </p>
+              <p className={`text-sm font-semibold mt-2 ${
+                orden.estado === 'validada' 
+                  ? 'text-green-600' 
+                  : orden.estado === 'realizada' 
+                  ? 'text-yellow-600' 
+                  : 'text-gray-600'
+                }`}>
+                Estado: {orden.estado}
+              </p>
 
-            return (
-              <div key={orden.id} className="relative bg-[#EBECF0] rounded-2xl p-6 shadow-sm flex flex-col gap-2">
-                {/* Flag/etiqueta de estado sobre el título */}
-                <div className="mb-1">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-wide text-white ${
-                      orden.estado === "firmada"
-                        ? "bg-[#003D31] text-[#F0FF3D]"
-                        : orden.estado === "validada"
-                        ? "bg-[#273287] text-[#F0FF3D]"
-                        : "bg-gray-500"
-                    }`}
-                  >
-                    {orden.estado?.toUpperCase()}
-                  </span>
-                </div>
-                {/* Número de orden (estilo modal ejecutar mantenimiento) */}
-                <div className="absolute top-4 right-4 inline-flex items-center rounded-full bg-[#19123D] text-white text-xs font-semibold px-3 py-1 select-none">
-                  <Hash className="w-3.5 h-3.5 mr-1" />
-                  {otLabel}
-                </div>
+              {orden.estado === "validada" && (
+                <button
+                  onClick={() => handleDescargarPDF(orden.id)}
+                  className="mt-2 px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" /> Descargar PDF firmado
+                </button>
+              )}
 
-                {/* Nombre del equipo */}
-                <h2 className="text-base md:text-lg font-bold text-[#111A3A] pr-28">{orden.equipo_nombre || "Equipo sin nombre"}</h2>
-
-                {/* Chips: Fecha de ejecución y Criticidad del equipo */}
-                <div className="mt-1 flex flex-wrap gap-2 items-center">
-                  <span className="inline-block rounded-full bg-[#6787AF] text-white text-xs font-semibold px-3 py-1">
-                    {orden.fecha_ejecucion?.slice(0, 10) || "Fecha no registrada"}
-                  </span>
-                  {orden.criticidad && (
-                    <span className={`inline-block rounded-full text-xs font-semibold px-3 py-1 ${getCriticidadClasses(orden.criticidad)}`}>
-                      {orden.criticidad}
-                    </span>
-                  )}
-                </div>
-
-                {/* Info del equipo y técnico */}
-                <div className="text-sm text-gray-700 mt-2 space-y-1">
-                  <p><strong>ID Equipo:</strong> {idEquipoLabel}</p>
-                  <p><strong>Serie:</strong> {orden.equipo_serie || orden.serie || "No especificada"}</p>
-                  <p><strong>Ubicación:</strong> {orden.ubicacion || "—"}</p>
-                  <p><strong>Ejecutado por:</strong> {orden.tecnico_nombre || orden.responsable || "—"}</p>
-                </div>
-
-                {/* Botones de evidencias */}
-                {orden.evidencias?.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    {orden.evidencias.map((ev, idx) => {
-                      const yaTieneCarpeta = ev.url?.includes("reportes/") || ev.url?.includes("evidencias/");
-                      const carpeta = ev.tipo === "reporte_firmado" ? "reportes" : "evidencias";
-                      const rutaFinal = yaTieneCarpeta ? ev.url : `${carpeta}/${ev.url}`;
-                      const etiqueta = ev.etiqueta || (ev.tipo === "reporte_firmado" ? "Reporte firmado" : `Evidencia ${idx + 1}`);
-
-                      return (
-                        <a
-                          key={idx}
-                          href={`${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-[#D0FF34] text-[#111A3A] px-4 py-1.5 rounded-full text-xs font-semibold transition"
+              {orden.evidencias?.length > 0 ? (
+                <div className="mt-2">
+                  <p className="font-semibold text-sm mb-1">Evidencias:</p>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    {orden.evidencias.map((ev, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleVerEvidencia(ev.url)}
+                          className="text-blue-600 hover:underline flex items-center gap-1"
                         >
-                          {etiqueta}
-                        </a>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                          {getFileIcon(ev.tipo)} Evidencia {idx + 1}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-2">No se adjuntaron evidencias.</p>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

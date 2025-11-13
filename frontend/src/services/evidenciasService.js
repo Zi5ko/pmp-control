@@ -1,12 +1,23 @@
-// src/services/evidenciasService.js
-import api from './api';
+// frontend/src/services/evidenciasService.js
 
-export const getEvidenciasPorOrden = async (ordenId) => {
-  const response = await api.get(`/evidencias/${ordenId}`);
-  return response.data;
+// Descarga una evidencia protegida y devuelve el blob del archivo
+export const descargarEvidencia = async (ruta) => {
+  const token = localStorage.getItem("token");
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
+  const response = await fetch(
+    `${baseUrl}/uploads/${ruta.replace(/^\\/|^uploads\\//, "")}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Error al obtener la evidencia");
+  }
+
+  return await response.blob();
 };
 
-export const deleteEvidencia = async (id) => {
-  const response = await api.delete(`/evidencias/${id}`);
-  return response.data;
-};

@@ -30,7 +30,8 @@ export default function Equipos() {
     familia: "",
     marca: "",
     modelo: "",
-    criticidad: "",
+    serie: "",
+    criticidad: opcionesCriticidad[0],
     ubicacion: "",
     plan_id: "",
     serie: "",
@@ -85,7 +86,8 @@ export default function Equipos() {
         familia: "",
         marca: "",
         modelo: "",
-        criticidad: "",
+        serie: "",
+        criticidad: opcionesCriticidad[0],
         ubicacion: "",
         plan_id: "",
         serie: "",
@@ -138,21 +140,31 @@ export default function Equipos() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <label className="text-sm text-gray-700 mb-1">Marca</label>
-            <div className="relative">
-              <Wrench className="absolute left-3 top-2.5 text-gray-400" size={16} />
-              <input
-                type="text"
-                name="marca"
-                value={form.marca}
-                onChange={handleChange}
-                required
-                maxLength={50}
-                className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none"
-              />
-            </div>
-          </div>
+        <div>
+          <label className="block text-sm font-medium">Serie</label>
+          <input
+            type="text"
+            name="serie"
+            value={form.serie}
+            onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Criticidad</label>
+          <select
+            name="criticidad"
+            value={form.criticidad}
+            onChange={handleChange}
+            className="w-full border px-3 py-2 rounded"
+          >
+            {opcionesCriticidad.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
 
           <div className="flex flex-col">
             <label className="text-sm text-gray-700 mb-1">Modelo</label>
