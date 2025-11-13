@@ -11,8 +11,8 @@ const path = require('path');
 //Middlewares base
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://pmpcontrol.pages.dev", // dominio Cloudflare
-  "https://tu-dominio.cl"         // si luego usas dominio propio
+  "https://pmp-control.pages.dev", // dominio Cloudflare
+  //"https://tu-dominio.cl"         // si luego usas dominio propio
 ];
 
 app.use(cors({
