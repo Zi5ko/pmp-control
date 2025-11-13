@@ -9,9 +9,21 @@ const app = express();
 const path = require('path');
 
 //Middlewares base
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://pmpcontrol.pages.dev", // dominio Cloudflare
+  "https://tu-dominio.cl"         // si luego usas dominio propio
+];
+
 app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
