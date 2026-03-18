@@ -34,5 +34,8 @@
     "cross-env": "^10.0.0",
     "supertest": "^7.1.4",
     "vitest": "^3.2.4"
+  },
+  "scripts": {
+  "start": "node index_app.js"
   }
 }
