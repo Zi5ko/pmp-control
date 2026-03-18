@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "jwt-decode": "^4.0.0"
-  }
+  },
   "scripts": {
   "start": "node index_app.js",
   "dev": "nodemon index_app.js"
