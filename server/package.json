@@ -4,9 +4,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test vitest run",
+    "start": "node index.js",
     "dev": "node index.js",
-    "start": "node index.js"
+    "test": "cross-env NODE_ENV=test vitest run"
   },
   "keywords": [],
   "author": "",
@@ -34,8 +34,5 @@
     "cross-env": "^10.0.0",
     "supertest": "^7.1.4",
     "vitest": "^3.2.4"
-  },
-  "scripts": {
-  "start": "node index_app.js"
   }
 }
