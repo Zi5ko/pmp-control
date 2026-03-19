@@ -13,6 +13,7 @@ import {
   Hash,
 } from "lucide-react";
 import axios from "axios";
+import { buildUploadsUrl } from "../../utils/backendUrl";
 import { getEvidenciasPorOrden, deleteEvidencia } from "../../services/evidenciasService";
 
 export default function ModalEjecutarOrden({
@@ -33,8 +34,6 @@ export default function ModalEjecutarOrden({
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
   const [evidencias, setEvidencias] = useState([]);
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-
   useEffect(() => {
     setTareas(observacionesPrevias?.tareas || "");
     setObservaciones(observacionesPrevias?.observaciones || "");
@@ -218,7 +217,7 @@ export default function ModalEjecutarOrden({
                     return (
                       <li key={ev.id} className="flex items-center gap-2">
                         <a
-                          href={`${baseUrl}/uploads/${sanitized}`}
+                          href={buildUploadsUrl(sanitized)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="bg-[#D0FF34] text-[#111A3A] font-semibold text-xs px-3 py-1 rounded-full shadow hover:bg-lime-300 max-w-[200px] truncate"

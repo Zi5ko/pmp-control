@@ -1,6 +1,6 @@
 //server/middlewares/orders.js
 
-const ESTADOS_PERMITIDOS = ['pendiente', 'realizada', 'reprogramada', 'omitida'];
+const ESTADOS_PERMITIDOS = ['pendiente', 'asignada', 'realizada', 'reprogramada', 'omitida', 'validada', 'firmada'];
 
 function validarEstadoOrden(req, res, next) {
   const { estado } = req.body;

@@ -7,6 +7,7 @@ import FirmaDibujo from "../../components/FirmaDibujo";
 import { Download } from "lucide-react";
 import SuccessBanner from "../../components/SuccesBanner";
 import ErrorBanner from "../../components/ErrorBanner";
+import { buildBackendUrl } from "../../utils/backendUrl";
 
 const formatearID = (id) => `ID${String(id).padStart(4, "0")}`;
 const formatearOT = (id) => `OT${String(id).padStart(4, "0")}`;
@@ -56,10 +57,9 @@ export default function RegistrosYFirmas() {
         setMensaje({ tipo: "success", texto: "Reporte generado correctamente." });
 
         // Mostrar el PDF en nueva pestaña
-        const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
         const rutaFinal = pdfRespuesta.url;
         window.open(
-          `${baseUrl}/${rutaFinal.replace(/^\/|^uploads\//, "")}`,
+          buildBackendUrl(rutaFinal.replace(/^\/|^uploads\//, "")),
           "_blank"
         );
   
