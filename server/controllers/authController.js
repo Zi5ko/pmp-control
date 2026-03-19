@@ -11,6 +11,23 @@ const frontendURL = process.env.FRONTEND_URL || (
     : 'http://localhost:5173'
 );
 const googleStrategyEnabled = () => !!passport._strategy('google');
+const jwtSecretConfigured = () => typeof process.env.JWT_SECRET === 'string' && process.env.JWT_SECRET.trim().length > 0;
+
+function redirectToLoginWithError(res, errorCode) {
+  return res.redirect(`${frontendURL}/login?error=${errorCode}`);
+}
+
+function buildAuthToken(user) {
+  if (!jwtSecretConfigured()) {
+    throw new Error('JWT_SECRET is not configured');
+  }
+
+  return jwt.sign(
+    { sub: user.id, email: user.email, rol_id: Number(user.rol_id) },
+    process.env.JWT_SECRET,
+    { expiresIn: '8h' }
+  );
+}
 
 exports.startGoogleAuth = (req, res, next) => {
   if (!googleStrategyEnabled()) {
@@ -25,31 +42,29 @@ exports.startGoogleAuth = (req, res, next) => {
 
 exports.googleCallback = (req, res, next) => {
   if (!googleStrategyEnabled()) {
-    return res.redirect(`${frontendURL}/login?error=google_config`);
+    return redirectToLoginWithError(res, 'google_config');
   }
 
   passport.authenticate('google', { session: false }, (err, user) => {
-    console.log("🔁 Google Callback ejecutado");
+    console.log('🔁 Google Callback ejecutado');
+
     if (err) {
-      console.error("❌ Error en callback:", err); // LOG CRÍTICO
-      return next(err);
+      console.error('❌ Error en callback de Google:', err);
+      return redirectToLoginWithError(res, 'google_server');
     }
 
     if (!user) {
-      return res.redirect(`${frontendURL}/login?error=google`);
+      return redirectToLoginWithError(res, 'google');
     }
 
-    const rolId = Number(user.rol_id);
-
-    const token = jwt.sign(
-      { sub: user.id, email: user.email, rol_id: rolId },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
-    console.log("✅ Token generado:", token);
-
-    res.redirect(`${frontendURL}/auth/google/success?token=${token}`);
+    try {
+      const token = buildAuthToken(user);
+      console.log('✅ Token generado para Google');
+      return res.redirect(`${frontendURL}/auth/google/success?token=${token}`);
+    } catch (tokenError) {
+      console.error('❌ No se pudo generar el token para Google:', tokenError);
+      return redirectToLoginWithError(res, 'google_config');
+    }
   })(req, res, next);
 };
 
@@ -81,20 +96,14 @@ exports.localLogin = async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const rolId = Number(user.rol_id);
-
-    const token = jwt.sign(
-      { sub: user.id, email: user.email, rol_id: rolId },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
+    const token = buildAuthToken(user);
 
     return res.status(200).json({
       token,
       user: {
         id: user.id,
         email: user.email,
-        rol_id: rolId,
+        rol_id: Number(user.rol_id),
         rol_nombre: user.rol_nombre,
         nombre: user.nombre
       }
@@ -121,17 +130,15 @@ exports.me = async (req, res) => {
     const user = result.rows[0];
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    const rolId = Number(user.rol_id);
-
     return res.status(200).json({
       id: user.id,
       email: user.email,
       nombre: user.nombre,
-      rol_id: rolId,
+      rol_id: Number(user.rol_id),
       rol_nombre: user.rol_nombre
     });
   } catch (e) {
-    console.error("❌ Error en /me:", e);
+    console.error('❌ Error en /me:', e);
     return res.status(401).json({ error: 'Token inválido' });
   }
 };

@@ -37,7 +37,9 @@ export default function Login() {
     if (errorParam === "google") {
       setError("Tu cuenta de Google no está autorizada para ingresar al sistema.");
     } else if (errorParam === "google_config") {
-      setError("El acceso con Google no está configurado en el servidor. Contacta al administrador.");
+      setError("El acceso con Google no está configurado en el servidor. Verifica GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL/BACKEND_URL y JWT_SECRET.");
+    } else if (errorParam === "google_server") {
+      setError("El servidor no pudo completar el inicio de sesión con Google. Revisa los logs de Railway y la configuración de variables de entorno.");
     }
   }, [searchParams]);
 
