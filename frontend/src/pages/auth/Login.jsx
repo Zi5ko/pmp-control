@@ -36,6 +36,8 @@ export default function Login() {
     const errorParam = searchParams.get("error");
     if (errorParam === "google") {
       setError("Tu cuenta de Google no está autorizada para ingresar al sistema.");
+    } else if (errorParam === "google_config") {
+      setError("El acceso con Google no está configurado en el servidor. Contacta al administrador.");
     }
   }, [searchParams]);
 

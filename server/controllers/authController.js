@@ -5,10 +5,29 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const frontendURL = process.env.FRONTEND_URL || (
+  process.env.NODE_ENV === 'production'
+    ? 'https://pmp-control.pages.dev'
+    : 'http://localhost:5173'
+);
+const googleStrategyEnabled = () => !!passport._strategy('google');
 
-exports.startGoogleAuth = passport.authenticate('google', { scope: ['profile', 'email'] });
+exports.startGoogleAuth = (req, res, next) => {
+  if (!googleStrategyEnabled()) {
+    return res.status(503).json({
+      error: 'Google OAuth no está configurado en el servidor',
+      required: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL o BACKEND_URL o RAILWAY_PUBLIC_DOMAIN']
+    });
+  }
+
+  return passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+};
 
 exports.googleCallback = (req, res, next) => {
+  if (!googleStrategyEnabled()) {
+    return res.redirect(`${frontendURL}/login?error=google_config`);
+  }
+
   passport.authenticate('google', { session: false }, (err, user) => {
     console.log("🔁 Google Callback ejecutado");
     if (err) {
@@ -17,7 +36,7 @@ exports.googleCallback = (req, res, next) => {
     }
 
     if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google`);
+      return res.redirect(`${frontendURL}/login?error=google`);
     }
 
     const rolId = Number(user.rol_id);
@@ -30,7 +49,7 @@ exports.googleCallback = (req, res, next) => {
 
     console.log("✅ Token generado:", token);
 
-    res.redirect(`${process.env.FRONTEND_URL}/auth/google/success?token=${token}`);
+    res.redirect(`${frontendURL}/auth/google/success?token=${token}`);
   })(req, res, next);
 };
 
