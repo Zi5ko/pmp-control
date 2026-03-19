@@ -45,6 +45,11 @@ exports.googleCallback = (req, res, next) => {
     return redirectToLoginWithError(res, 'google_config');
   }
 
+  if (req.query.error) {
+    console.error('❌ Google devolvió un error en el callback:', req.query.error, req.query.error_description || '');
+    return redirectToLoginWithError(res, 'google');
+  }
+
   passport.authenticate('google', { session: false }, (err, user) => {
     console.log('🔁 Google Callback ejecutado');
 
