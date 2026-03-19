@@ -12,7 +12,7 @@ const path = require('path');
 const allowedOrigins = [
   "http://localhost:5173",
   "https://pmp-control.pages.dev", // dominio Cloudflare
-  "pmp-control-production.up.railway.app"
+  "https://pmp-control-production.up.railway.app"
   //"https://tu-dominio.cl"         // si luego usas dominio propio
 ];
 

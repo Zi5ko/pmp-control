@@ -6,18 +6,29 @@ module.exports = function initPassport(passport) {
   const {
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
-    BACKEND_URL
+    BACKEND_URL,
+    GOOGLE_CALLBACK_URL,
+    RAILWAY_PUBLIC_DOMAIN
   } = process.env;
 
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !BACKEND_URL) {
-    console.warn('Google OAuth environment variables missing, skipping strategy');
+  const callbackURL =
+    GOOGLE_CALLBACK_URL ||
+    (BACKEND_URL ? `${BACKEND_URL}/api/auth/google/callback` : null) ||
+    (RAILWAY_PUBLIC_DOMAIN ? `https://${RAILWAY_PUBLIC_DOMAIN}/api/auth/google/callback` : null);
+
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !callbackURL) {
+    const missing = [];
+    if (!GOOGLE_CLIENT_ID) missing.push('GOOGLE_CLIENT_ID');
+    if (!GOOGLE_CLIENT_SECRET) missing.push('GOOGLE_CLIENT_SECRET');
+    if (!callbackURL) missing.push('GOOGLE_CALLBACK_URL o BACKEND_URL o RAILWAY_PUBLIC_DOMAIN');
+    console.warn(`Google OAuth environment variables missing, skipping strategy. Missing: ${missing.join(', ')}`);
     return;
   }
 
   passport.use(new Strategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: `${BACKEND_URL}/api/auth/google/callback`
+    callbackURL
   },
   async (_accessToken, _refreshToken, profile, done) => {
     try {
