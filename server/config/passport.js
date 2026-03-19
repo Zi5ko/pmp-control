@@ -18,6 +18,10 @@ function normalizeBaseUrl(rawUrl) {
   }
 }
 
+function normalizeEmail(email) {
+  return typeof email === 'string' ? email.trim().toLowerCase() : null;
+}
+
 module.exports = function initPassport(passport) {
   const {
     GOOGLE_CLIENT_ID,
@@ -52,42 +56,41 @@ module.exports = function initPassport(passport) {
   },
   async (_accessToken, _refreshToken, profile, done) => {
     try {
-      console.log("🎯 Google Profile:", profile);
-      const email = profile.emails?.[0]?.value;
-      const nombre = profile.displayName;
-  
+      const email = normalizeEmail(profile.emails?.[0]?.value);
+      const nombre = profile.displayName?.trim() || email;
+
       if (!email) {
-        console.error("❌ No se obtuvo email desde el perfil de Google");
+        console.error('❌ No se obtuvo email desde el perfil de Google');
         return done(null, false);
       }
-  
-      // Buscar usuario por email
-      const existing = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+
+      const existing = await db.query(
+        'SELECT id, email, nombre, rol_id FROM usuarios WHERE LOWER(email) = LOWER($1) LIMIT 1',
+        [email]
+      );
       let user = existing.rows[0];
 
-      // Solo se permite crear un usuario por Google si no hay usuarios registrados
       if (!user) {
         const count = await db.query('SELECT COUNT(*) FROM usuarios');
-        const total = parseInt(count.rows[0].count, 10);
+        const total = Number.parseInt(count.rows[0].count, 10);
 
         if (total === 0) {
-          // Primer usuario: se permite crear como administrador
           const result = await db.query(
             `INSERT INTO usuarios (email, nombre, rol_id)
-            VALUES ($1, $2, $3)
-            RETURNING id, email, rol_id`,
+             VALUES ($1, $2, $3)
+             RETURNING id, email, nombre, rol_id`,
             [email, nombre, 1]
           );
           user = result.rows[0];
         } else {
-          // Ya hay usuarios: bloquear acceso
           return done(null, false);
         }
-  }
-  done(null, user);
-} catch (error) {
-  console.error("❌ Error al procesar el perfil de Google:", error);
-  done(error, null);
-}
-}));
+      }
+
+      return done(null, user);
+    } catch (error) {
+      console.error('❌ Error al procesar el perfil de Google:', error);
+      return done(error, null);
+    }
+  }));
 };

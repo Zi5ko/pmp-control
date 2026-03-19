@@ -4,6 +4,8 @@ import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getRutaPorRol } from "../../utils/rutasPorRol";
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 export default function GoogleSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -17,10 +19,9 @@ export default function GoogleSuccess() {
       return;
     }
 
-    // Guardar token
     localStorage.setItem("token", token);
 
-    axios.get("http://localhost:3000/api/auth/me", {
+    axios.get(`${apiUrl}/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -32,8 +33,9 @@ export default function GoogleSuccess() {
       })
       .catch((err) => {
         console.error("❌ Error al obtener usuario:", err);
-        localStorage.setItem("login_error", "Acceso de negado. Cuenta no registrada.");
-        navigate("/login");
+        localStorage.removeItem("token");
+        localStorage.setItem("login_error", "Acceso denegado. Cuenta no registrada.");
+        navigate("/login?error=google_server");
       });
   }, [navigate, searchParams]);
 
