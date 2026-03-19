@@ -77,4 +77,31 @@ const pool = new Pool({
     : false
 });
 
+
+async function ensureOrdenesEstadoConstraint() {
+  if (!connectionString) {
+    return;
+  }
+
+  try {
+    await pool.query(`
+      ALTER TABLE ordenes_trabajo
+      DROP CONSTRAINT IF EXISTS ordenes_trabajo_estado_check
+    `);
+
+    await pool.query(`
+      ALTER TABLE ordenes_trabajo
+      ADD CONSTRAINT ordenes_trabajo_estado_check
+      CHECK (estado IN ('pendiente', 'asignada', 'realizada', 'reprogramada', 'omitida', 'validada', 'firmada'))
+    `);
+  } catch (error) {
+    if (error.code === '42P01') {
+      return;
+    }
+
+    console.error('No se pudo sincronizar la restricción de estados de ordenes_trabajo:', error.message);
+  }
+}
+void ensureOrdenesEstadoConstraint();
+
 module.exports = pool;
