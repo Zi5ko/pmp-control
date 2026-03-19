@@ -5,14 +5,18 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const frontendURL = process.env.FRONTEND_URL || 'https://pmp-control.pages.dev';
+const frontendURL = process.env.FRONTEND_URL || (
+  process.env.NODE_ENV === 'production'
+    ? 'https://pmp-control.pages.dev'
+    : 'http://localhost:5173'
+);
 const googleStrategyEnabled = () => !!passport._strategy('google');
 
 exports.startGoogleAuth = (req, res, next) => {
   if (!googleStrategyEnabled()) {
     return res.status(503).json({
       error: 'Google OAuth no está configurado en el servidor',
-      required: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL o BACKEND_URL']
+      required: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_CALLBACK_URL o BACKEND_URL o RAILWAY_PUBLIC_DOMAIN']
     });
   }
 

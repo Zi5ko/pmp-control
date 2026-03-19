@@ -2,6 +2,22 @@
 const { Strategy } = require('passport-google-oauth20');
 const db = require('../db');
 
+function normalizeBaseUrl(rawUrl) {
+  if (!rawUrl) return null;
+
+  try {
+    const parsed = new URL(rawUrl);
+    // En Railway el dominio público no requiere :3000 en HTTPS.
+    if (parsed.hostname.endsWith('.up.railway.app') && parsed.port === '3000') {
+      parsed.port = '';
+      parsed.protocol = 'https:';
+    }
+    return parsed.toString().replace(/\/$/, '');
+  } catch (_error) {
+    return rawUrl.replace(/\/$/, '');
+  }
+}
+
 module.exports = function initPassport(passport) {
   const {
     GOOGLE_CLIENT_ID,
@@ -11,10 +27,14 @@ module.exports = function initPassport(passport) {
     RAILWAY_PUBLIC_DOMAIN
   } = process.env;
 
-  const callbackURL =
-    GOOGLE_CALLBACK_URL ||
-    (BACKEND_URL ? `${BACKEND_URL}/api/auth/google/callback` : null) ||
-    (RAILWAY_PUBLIC_DOMAIN ? `https://${RAILWAY_PUBLIC_DOMAIN}/api/auth/google/callback` : null);
+  const normalizedGoogleCallbackUrl = normalizeBaseUrl(GOOGLE_CALLBACK_URL);
+  const normalizedBackendUrl = normalizeBaseUrl(BACKEND_URL);
+
+  const callbackURL = normalizedGoogleCallbackUrl
+    ? normalizedGoogleCallbackUrl
+    : (normalizedBackendUrl
+      ? `${normalizedBackendUrl}/api/auth/google/callback`
+      : (RAILWAY_PUBLIC_DOMAIN ? `https://${RAILWAY_PUBLIC_DOMAIN}/api/auth/google/callback` : null));
 
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !callbackURL) {
     const missing = [];
