@@ -10,6 +10,7 @@ import {
   FileSignature,
   Hash,
 } from "lucide-react";
+import { buildUploadsUrl } from "../../utils/backendUrl";
 
 export default function HistorialTecnico() {
   const [ordenes, setOrdenes] = useState([]);
@@ -40,8 +41,6 @@ export default function HistorialTecnico() {
     if (t.includes("zip") || t.includes("rar")) return <Archive className="w-4 h-4 text-gray-600" />;
     return <FileText className="w-4 h-4" />;
   };
-
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
   // Colores de criticidad
   const getCriticidadClasses = (crit) => {
@@ -163,7 +162,7 @@ export default function HistorialTecnico() {
                       return (
                         <a
                           key={idx}
-                          href={`${baseUrl}/uploads/${rutaFinal.replace(/^\/|^uploads\//, "")}`}
+                          href={buildUploadsUrl(rutaFinal.replace(/^\/|^uploads\//, ""))}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="bg-[#D0FF34] text-[#111A3A] px-4 py-1.5 rounded-full text-xs font-semibold transition"

@@ -1,5 +1,6 @@
 // frontend/src/services/reportesService.js
 import api from "./api";
+import { buildBackendUrl } from "../utils/backendUrl";
 
 
 // Obtener órdenes validadas (para generar reportes firmados)
@@ -19,7 +20,7 @@ export const descargarReportePDF = async (nombreArchivo) => {
   const token = localStorage.getItem("token");
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/reportes/descargar/${nombreArchivo}`,
+    buildBackendUrl(`api/reportes/descargar/${nombreArchivo}`),
     {
       method: "GET",
       headers: {

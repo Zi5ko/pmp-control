@@ -1,10 +1,9 @@
 // src/components/ordenes/DetalleOrdenModal.jsx
 import { XCircle, ListChecks, User, UserCheck, FileUp } from "lucide-react";
+import { buildUploadsUrl } from "../../utils/backendUrl";
 
 export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
   if (!orden) return null;
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-
   const limpiarTexto = (valor, defecto) => {
     if (!valor) return defecto;
     if (Array.isArray(valor)) {
@@ -99,7 +98,7 @@ export default function DetalleOrdenModal({ orden, evidencias = [], onClose }) {
                   return (
                     <a
                       key={idx}
-                      href={`${baseUrl}/uploads/${sanitized}`}
+                      href={buildUploadsUrl(sanitized)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="bg-[#D0FF34] text-[#111A3A] px-4 py-1 rounded-full text-xs font-semibold hover:bg-lime-300"
