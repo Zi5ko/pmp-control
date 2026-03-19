@@ -8,21 +8,47 @@ const evidenciasRoutes = require('./routes/evidenciasRoutes');
 const app = express();
 const path = require('path');
 
+function normalizeOrigin(origin) {
+  return typeof origin === 'string' ? origin.trim().replace(/\/$/, '') : null;
+}
+
+function collectAllowedOrigins() {
+  const origins = new Set([
+    'http://localhost:5173',
+    'https://pmp-control.pages.dev',
+    'https://pmp-control-production.up.railway.app'
+  ]);
+
+  [process.env.FRONTEND_URL, process.env.CORS_ORIGIN, process.env.CORS_ORIGINS]
+    .filter(Boolean)
+    .forEach((value) => {
+      value
+        .split(',')
+        .map(normalizeOrigin)
+        .filter(Boolean)
+        .forEach((origin) => origins.add(origin));
+    });
+
+  return origins;
+}
+
 //Middlewares base
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://pmp-control.pages.dev", // dominio Cloudflare
-  "https://pmp-control-production.up.railway.app"
-  //"https://tu-dominio.cl"         // si luego usas dominio propio
-];
+const allowedOrigins = collectAllowedOrigins();
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin(origin, callback) {
+    if (!origin) {
       callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+      return;
     }
+
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (normalizedOrigin && allowedOrigins.has(normalizedOrigin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
 }));
